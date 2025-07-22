@@ -60,12 +60,17 @@ const handleLogin = async () => {
 <style scoped>
 .body {
     font-family: "Comic Sans MS", sans-serif;
-    background-color: #f0f0f0;
+    background-color: #19202e;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    width: 100vw;
     margin: 0;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .login-container {
@@ -117,7 +122,7 @@ button:hover {
 
 @media (max-width: 600px) {
     .login-container {
-        width: 90%;
+        width: 80%;
         padding: 30px;
     }
 }
