@@ -1,5 +1,4 @@
 <template>
-
     <div class="homepage-body">
         <div class="home-header">
             <p>Welcome Home! {{ username }}</p>
@@ -7,7 +6,7 @@
         </div>
 
         <div class="box-container">
-            <div class="panel new_expense" @click="goTo('/add-expense')">
+            <div class="panel new_expense" @click="showCreateExpense = true">
                 <span>📖 01 📖</span>
                 <p>Create Expense</p>
             </div>
@@ -31,6 +30,8 @@
                 <LoadingSpinner :visible="loading" />
                 <p style="font-size: 2rem;">Logout</p>
             </div>
+
+            <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" />
         </div>
     </div>
 </template>
@@ -39,10 +40,13 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import CreateExpense from '@/components/CreateExpense.vue'
 
 const router = useRouter()
 
 const loading = ref(false)
+const showCreateExpense = ref(false)
+
 
 function goTo(path) {
     router.push(path)
@@ -94,10 +98,9 @@ function logout() {
         loading.value = false
         localStorage.clear()    // Clear storage after loading finishes
         router.push('/')        // Navigate after loading finishes
-    }, 3000)
+    }, 2000)
 }
 </script>
-
 
 <style scoped>
 * {
@@ -192,9 +195,10 @@ function logout() {
         display: block;
     }
 
-    .box-container{
+    .box-container {
         margin-top: 10%;
     }
+
     .panel {
         width: 100%;
         margin-bottom: 16px;

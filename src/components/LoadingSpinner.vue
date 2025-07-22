@@ -20,8 +20,6 @@ html,
 body,
 #app {
     height: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 .loading-overlay {
@@ -33,7 +31,7 @@ body,
     /* full viewport width */
     height: 100%;
     /* full viewport height */
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: transparent;
     display: flex;
     /* use flex */
     justify-content: center;
@@ -42,8 +40,6 @@ body,
     /* center vertically */
     z-index: 9999;
     /* above all content */
-    margin: 0;
-    padding: 0;
     overflow: hidden;
     /* prevent scroll */
 }
@@ -51,10 +47,10 @@ body,
 .spinner {
     width: 50px;
     height: 50px;
-    border: 6px solid #ccc;
+    border: 6px solid #040303;
     border-top-color: #3498db;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
