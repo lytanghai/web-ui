@@ -94,7 +94,7 @@ async function submitExpense() {
         }
 
         await axios.post(
-            'http://localhost:8080/expense_tracker/expense/create',
+            'https://expense-tracker-istq.onrender.com/expense_tracker/expense/create',
             expense.value,
             config
         )
