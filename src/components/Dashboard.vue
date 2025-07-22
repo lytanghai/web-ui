@@ -96,8 +96,8 @@ function logout() {
 
     setTimeout(() => {
         loading.value = false
-        localStorage.clear()    // Clear storage after loading finishes
-        router.push('/')        // Navigate after loading finishes
+        localStorage.clear()
+        router.push('/')
     }, 2000)
 }
 </script>
@@ -158,7 +158,8 @@ function logout() {
 
 .panel p {
     margin: 0;
-    font-size: 16px;
+    font-size: 1.2rem;
+    color: #000;
 }
 
 .panel.new_expense {
@@ -206,7 +207,7 @@ function logout() {
 
     .panel a {
         padding: 20px;
-        font-size: 18px;
+        font-size: 1rem;
     }
 }
 </style>

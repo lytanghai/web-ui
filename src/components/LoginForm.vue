@@ -43,8 +43,6 @@ const handleLogin = async () => {
         })
 
         const token = response.data.token
-
-
         setTimeout(() => {
             loading.value = false
             localStorage.setItem('jwt_token', token)
