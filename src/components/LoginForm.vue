@@ -35,7 +35,7 @@ const handleLogin = async () => {
     error.value = ''
     loading.value = true
 
-    const url_login = 'http://localhost:8080/expense_tracker/auth/login'
+    const url_login = 'https://expense-tracker-istq.onrender.com/expense_tracker/auth/login'
     try {
         const response = await axios.post(url_login, {
             username: username.value,
