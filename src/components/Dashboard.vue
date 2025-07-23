@@ -21,10 +21,13 @@
                 <span>📢 Profit 📢</span>
                 <p>My Profits</p>
             </div>
-            <div class="panel report" @click="goTo('/check-report')">
+            <div class="panel report" @click="showReportOptions = true">
                 <span>📊 Analyze 📊</span>
                 <p>Reports</p>
             </div>
+
+            <!-- Popup Modal -->
+            <ReportTypeSelector v-if="showReportOptions" @close="showReportOptions = false" @select="goToReport" />
             <div class="panel planning" @click="goTo('/check-report')">
                 <span>📊 Analyze 📊</span>
                 <p>Planning</p>
@@ -41,12 +44,24 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateExpense from '@/views/CreateExpense.vue'
 import MyExpenses from '@/views/MyExpenses.vue'
+import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
 
 const router = useRouter()
 
 const loading = ref(false)
 const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
+
+const showReportOptions = ref(false)
+
+function goToReport(type) {
+    showReportOptions.value = false
+    if (type === 'expense') {
+        router.push('/expense-report')
+    } else if (type === 'profit') {
+        router.push('/profit-report')
+    }
+}
 
 function goTo(path) {
     router.push(path)
