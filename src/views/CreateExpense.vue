@@ -92,9 +92,8 @@ async function submitExpense() {
                 Authorization: `Bearer ${token}`,
             },
         }
-        console.log(import.meta.env.SERVER_WEB_URL + import.meta.env.CREATE_NEW_EXPENSE_URI)
         await axios.post(
-            import.meta.env.SERVER_WEB_URL + import.meta.env.CREATE_NEW_EXPENSE_URI,
+            import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_CREATE_NEW_EXPENSE_URI,
             expense.value,
             config
         )
@@ -102,7 +101,13 @@ async function submitExpense() {
         alert('Expense created successfully!')
         emit('close')
     } catch (error) {
-        alert('Failed to create expense: ' + (error.response?.data?.message || error.message))
+        if (error.response && error.response.status === 403) {
+            alert('Session expired or unauthorized. Please login again.')
+            localStorage.removeItem('jwt_token')
+            window.location.href = '/'
+        } else {
+            console.error('Error fetching expenses:', error)
+        }
     }
 }
 

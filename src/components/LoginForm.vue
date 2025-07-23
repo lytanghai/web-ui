@@ -46,7 +46,7 @@ const handleLogin = async () => {
             loading.value = false
             localStorage.setItem('jwt_token', token)
             router.push('/home')
-        }, 5000)
+        }, 4000)
 
 
     } catch (err) {

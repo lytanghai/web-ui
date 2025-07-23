@@ -1,7 +1,6 @@
 <template>
     <div class="homepage-body">
         <div class="home-header">
-            <p>Welcome Back {{ username }} !</p>
             <p>Date: {{ current }}</p>
         </div>
 
@@ -10,7 +9,7 @@
                 <span> 📖 Expense 📖</span>
                 <p>Add Expense</p>
             </div>
-            <div class="panel my_expense" @click="goTo('/get-expense')">
+            <div class="panel my_expense" @click="showMyExpenses = true">
                 <span>💰 Expense 💰</span>
                 <p>My Expenses</p>
             </div>
@@ -32,6 +31,7 @@
             </div>
 
             <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" />
+            <MyExpenses v-if="showMyExpenses" @close="showMyExpenses = false" />
         </div>
     </div>
 </template>
@@ -40,12 +40,13 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateExpense from '@/views/CreateExpense.vue'
+import MyExpenses from '@/views/MyExpenses.vue'
 
 const router = useRouter()
 
 const loading = ref(false)
 const showCreateExpense = ref(false)
-
+const showMyExpenses = ref(false)
 
 function goTo(path) {
     router.push(path)
@@ -108,7 +109,7 @@ function logout() {
 
 .home-header {
     width: auto;
-    height: 80px;
+    height: 50px;
     background-color: #e3963e;
     padding: .2rem;
     color: #000000;
@@ -199,7 +200,7 @@ function logout() {
         display: block;
     }
 
-    .home-header{
+    .home-header {
         font-size: 1.1rem;
     }
 
