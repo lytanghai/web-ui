@@ -1,7 +1,7 @@
 <template>
     <div class="modal-overlay">
         <div class="modal-content">
-            <h2>Create Expense</h2>
+            <h2>Add Expense</h2>
             <form @submit.prevent="submitExpense">
                 <label>
                     Price:
@@ -92,9 +92,9 @@ async function submitExpense() {
                 Authorization: `Bearer ${token}`,
             },
         }
-
+        console.log(import.meta.env.SERVER_WEB_URL + import.meta.env.CREATE_NEW_EXPENSE_URI)
         await axios.post(
-            'https://expense-tracker-istq.onrender.com/expense_tracker/expense/create',
+            import.meta.env.SERVER_WEB_URL + import.meta.env.CREATE_NEW_EXPENSE_URI,
             expense.value,
             config
         )

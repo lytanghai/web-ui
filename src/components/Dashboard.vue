@@ -1,34 +1,34 @@
 <template>
     <div class="homepage-body">
         <div class="home-header">
-            <p>Welcome Home! {{ username }}</p>
+            <p>Welcome Back {{ username }} !</p>
             <p>Date: {{ current }}</p>
         </div>
 
         <div class="box-container">
-            <div class="panel new_expense" @click="showCreateExpense = true">
-                <span>📖 01 📖</span>
-                <p>Create Expense</p>
+            <div class="panel add_expense" @click="showCreateExpense = true">
+                <span> 📖 Expense 📖</span>
+                <p>Add Expense</p>
             </div>
-            <div class="panel view_expense" @click="goTo('/get-expense')">
-                <span>💰 02 💰</span>
-                <p>View Expense</p>
+            <div class="panel my_expense" @click="goTo('/get-expense')">
+                <span>💰 Expense 💰</span>
+                <p>My Expenses</p>
             </div>
-            <div class="panel update_expense" @click="goTo('/list-expense')">
-                <span>✏️ 03 ✏️</span>
-                <p>Update Expense</p>
+            <div class="panel add_profit" @click="goTo('/list-expense')">
+                <span>✏️ Profit ✏️</span>
+                <p>Add Profit</p>
             </div>
-            <div class="panel check_report" @click="goTo('/check-report')">
-                <span>📊 04 📊</span>
-                <p>Check Report</p>
+            <div class="panel my_profit" @click="goTo('/trigger-message')">
+                <span>📢 Profit 📢</span>
+                <p>My Profits</p>
             </div>
-            <div class="panel send_message" @click="goTo('/trigger-message')">
-                <span>📢 05 📢</span>
-                <p>Send Message</p>
+            <div class="panel report" @click="goTo('/check-report')">
+                <span>📊 Analyze 📊</span>
+                <p>Reports</p>
             </div>
-            <div class="panel logout" @click="logout">
-                <LoadingSpinner :visible="loading" />
-                <p style="font-size: 2rem;">Logout</p>
+            <div class="panel planning" @click="goTo('/check-report')">
+                <span>📊 Analyze 📊</span>
+                <p>Planning</p>
             </div>
 
             <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" />
@@ -39,8 +39,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import CreateExpense from '@/components/CreateExpense.vue'
+import CreateExpense from '@/views/CreateExpense.vue'
 
 const router = useRouter()
 
@@ -109,11 +108,12 @@ function logout() {
 
 .home-header {
     width: auto;
-    height: 100px;
+    height: 80px;
     background-color: #e3963e;
-    padding: 1rem;
+    padding: .2rem;
     color: #000000;
     font-weight: bold;
+    text-align: center;
 }
 
 .homepage-body {
@@ -126,14 +126,13 @@ function logout() {
 }
 
 .box-container {
-    margin-top: 12%;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
     max-width: 800px;
     margin: 40px auto;
     padding: 0 16px;
-    margin-top: 10%;
+    margin-top: 5%;
 }
 
 .panel {
@@ -162,24 +161,28 @@ function logout() {
     color: #000;
 }
 
-.panel.new_expense {
+.panel.add_expense {
     background-color: #1abc9c;
 }
 
-.panel.view_expense {
+.panel.my_expense {
     background-color: #3498db;
 }
 
-.panel.update_expense {
+.panel.add_profit {
     background-color: #f39c12;
 }
 
-.panel.check_report {
+.panel.report {
     background-color: #9b59b6;
 }
 
-.panel.send_message {
+.panel.my_profit {
     background-color: #e74c3c;
+}
+
+.panel.planning {
+    background-color: #57d6a7;
 }
 
 .panel.logout {
@@ -196,13 +199,12 @@ function logout() {
         display: block;
     }
 
-    .box-container {
-        margin-top: 10%;
+    .home-header{
+        font-size: 1.1rem;
     }
 
     .panel {
         width: 100%;
-        margin-bottom: 16px;
     }
 
     .panel a {

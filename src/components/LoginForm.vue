@@ -34,10 +34,9 @@ const loading = ref(false)
 const handleLogin = async () => {
     error.value = ''
     loading.value = true
-
-    const url_login = 'https://expense-tracker-istq.onrender.com/expense_tracker/public/auth/login'
+    console.log(import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_LOGIN_URI)
     try {
-        const response = await axios.post(url_login, {
+        const response = await axios.post(import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_LOGIN_URI, {
             username: username.value,
             password: password.value
         })
