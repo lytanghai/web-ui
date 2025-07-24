@@ -2,7 +2,7 @@
   <div class="loading-overlay">
     <div class="loading-content">
       <img src="../assets/raha-money.gif" alt="Loading..." class="loading-gif" />
-       <p class="loading-text">Loading Milloinaire Project<span class="dot-animation"></span></p>
+       <p class="loading-text">Loading Millionaire Project<span class="dot-animation"></span></p>
     </div>
   </div>
 </template>

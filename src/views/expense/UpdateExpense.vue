@@ -33,7 +33,7 @@
             <input id="price" type="number" step="0.01" v-model.number="form.price" required />
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="margin-top: -4%;">
             <label for="currency">Currency</label>
             <select id="currency" v-model="form.currency" required>
               <option value="USD">USD</option>
@@ -59,7 +59,7 @@
           <textarea id="note" v-model="form.note"></textarea>
         </div>
 
-        <div class="form-actions">
+        <div class="form-actions update-btn">
           <button type="submit">Update</button>
         </div>
       </form>
@@ -236,6 +236,7 @@ button[type='submit'] {
   .modal-content {
     padding: 1rem;
     width: 95vw;
+    margin-top: -5%
   }
 
   .row-group {
@@ -244,6 +245,12 @@ button[type='submit'] {
 
   .form-actions {
     text-align: center;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .update-btn{
+    margin-top: -2%;
   }
 }
 </style>
