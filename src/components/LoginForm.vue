@@ -35,7 +35,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
-import StatusModel from '../views/PopUp/StatusModel.vue'
+import StatusModel from '../views/pop_up/StatusModel.vue'
 
 const router = useRouter()
 const username = ref('')

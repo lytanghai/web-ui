@@ -581,7 +581,7 @@ onMounted(() => {
   }
 
   .expense-table td:nth-child(8)::before {
-    content: "Actions:";
+    content: "Actions";
     font-weight: 600;
   }
 

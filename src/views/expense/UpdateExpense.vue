@@ -185,7 +185,6 @@ function close() {
 }
 
 .form-group label {
-  margin-bottom: 4px;
   font-weight: 600;
 }
 

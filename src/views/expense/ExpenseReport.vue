@@ -15,8 +15,8 @@
                         <input type="radio" value="specific" v-model="selectedOption" />
                         Specific Date
                     </label>
-                    <input type="date" style="width: fit-content;" v-if="selectedOption === 'specific'"
-                        v-model="specificDate" />
+                    <input type="date" v-if="selectedOption === 'specific'" v-model="specificDate"
+                        style="width: fit-content;" F />
                 </div>
 
                 <!-- Range Date -->
@@ -40,7 +40,9 @@
                     </label>
                 </div>
 
-                <button class="apply-btn" @click="applyFilter">Apply Filter</button>
+                <button class="apply-btn" @click="applyFilter" :disabled="isLoading">
+                    Apply Filter
+                </button>
             </section>
         </div>
 
@@ -48,15 +50,17 @@
         <div v-if="showResults" class="modal-overlay" @click.self="closeModal">
             <div class="modal-box">
                 <button class="modal-close" @click="closeModal">×</button>
-                <ExpenseResultChart :expenses="expenses" />
+                <ExpenseResultChart :expenses="expenses" :selectedOption="selectedOption" :date1="date1"
+                    :date2="date2" />
             </div>
         </div>
+
         <LoadingSpinner v-if="isLoading" />
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import ExpenseResultChart from '@/views/expense/ExpenseResultChart.vue'
@@ -72,11 +76,36 @@ const rangeEndDate = ref('')
 const rangeError = ref('')
 const expenses = ref([])
 const showResults = ref(false)
+
 const SERVER_WEB_URL = import.meta.env.VITE_SERVER_WEB_URL
 const FETCH_SPC_DATE = import.meta.env.VITE_FETCH_EXPENSE_BY_SPC_DATE
 const FETCH_RNG_DATE_START = import.meta.env.VITE_FETCH_EXPENSE_BY_RNG_DATE_START
 const FETCH_RNG_DATE_END = import.meta.env.VITE_FETCH_EXPENSE_BY_RNG_DATE_END
 const FETCH_MONTHLY = import.meta.env.VITE_FETCH_EXPENSE_BY_MONTHLY
+
+const thisMonthStart = computed(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+})
+
+const thisMonthEnd = computed(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+})
+
+// Compute date1 and date2 based on selectedOption for prop passing
+const date1 = computed(() => {
+    if (selectedOption.value === 'specific') return specificDate.value
+    if (selectedOption.value === 'range') return rangeStartDate.value
+    if (selectedOption.value === 'thisMonth') return thisMonthStart.value
+    return ''
+})
+
+const date2 = computed(() => {
+    if (selectedOption.value === 'range') return rangeEndDate.value
+    if (selectedOption.value === 'thisMonth') return thisMonthEnd.value
+    return ''
+})
 
 function validateRange() {
     rangeError.value = ''
@@ -111,21 +140,22 @@ async function applyFilter() {
     }
 
     if (selectedOption.value === 'specific') {
-        if (!specificDate.value) return alert('Please select a date.')
+        if (!specificDate.value) {
+            alert('Please select a date.')
+            return
+        }
         url = `${SERVER_WEB_URL}${FETCH_SPC_DATE}${specificDate.value}`
     } else if (selectedOption.value === 'range') {
         if (!rangeStartDate.value || !rangeEndDate.value) {
-            return alert('Please select both start and end dates.')
+            alert('Please select both start and end dates.')
+            return
         }
-
         const start = new Date(rangeStartDate.value)
         const end = new Date(rangeEndDate.value)
-
         if (end <= start) {
             rangeError.value = 'End date must be after start date.'
             return
         }
-
         url = `${SERVER_WEB_URL}${FETCH_RNG_DATE_START}${rangeStartDate.value}${FETCH_RNG_DATE_END}${rangeEndDate.value}`
     } else if (selectedOption.value === 'thisMonth') {
         url = `${SERVER_WEB_URL}${FETCH_MONTHLY}`
@@ -138,7 +168,6 @@ async function applyFilter() {
                 Authorization: `Bearer ${token}`
             }
         })
-
         expenses.value = response.data.data?.content || []
         showResults.value = true
     } catch (error) {

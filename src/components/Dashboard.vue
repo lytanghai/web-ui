@@ -27,13 +27,11 @@
                 <p>Reports</p>
             </div>
 
-            <!-- Popup Modal -->
-            <ReportTypeSelector v-if="showReportOptions" @close="showReportOptions = false" @select="goToReport" />
-            <div class="panel planning" @click="goTo('/check-report')">
+            <!-- <div class="panel planning" @click="goTo('/check-report')">
                 <span>📊 Analyze 📊</span>
                 <p>Planning</p>
-            </div>
-
+            </div> -->
+            <ReportTypeSelector v-if="showReportOptions" @close="showReportOptions = false" @select="goToReport" />
             <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" @status="handleStatus" />
             <StatusModel v-if="showStatusModal" :visible="showStatusModal" :title="statusTitle" :message="statusMessage"
                 :status="statusType" closeText="Close" @close="closeStatusModal" />
@@ -48,7 +46,7 @@ import { useRouter } from 'vue-router'
 import CreateExpense from '@/views/expense/CreateExpense.vue'
 import MyExpenses from '@/views/expense/MyExpenses.vue'
 import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
-import StatusModel from '../views/PopUp/StatusModel.vue'
+import StatusModel from '../views/pop_up/StatusModel.vue'
 
 const router = useRouter()
 
