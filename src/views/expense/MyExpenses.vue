@@ -9,9 +9,9 @@
 
       <!-- Filter Form -->
       <div class="filter-form">
-        <input v-model="filters.category" placeholder="eg. Drinks" />
-        <input v-model="filters.item" placeholder="eg. Coffee" />
-        <input v-model="filters.currency" placeholder="eg. USD" />
+        <input v-model="filters.category" placeholder="Category" />
+        <input v-model="filters.item" placeholder="Item" />
+        <input v-model="filters.currency" placeholder="Currency" />
         <button @click="fetchExpenses(0)">Search</button>
       </div>
 
@@ -98,7 +98,7 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue'
 import UpdateExpense from './UpdateExpense.vue'
-import LoadingSpinner from '../components/LoadingSpinner.vue'
+import LoadingSpinner from '../../components/LoadingSpinner.vue'
 import axios from 'axios'
 
 const emit = defineEmits(['close'])

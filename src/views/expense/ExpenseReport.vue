@@ -51,6 +51,7 @@
                 <ExpenseResultChart :expenses="expenses" />
             </div>
         </div>
+        <LoadingSpinner v-if="isLoading" />
     </div>
 </template>
 
@@ -58,10 +59,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import ExpenseResultChart from '@/views/ExpenseResultChart.vue'
+import ExpenseResultChart from '@/views/expense/ExpenseResultChart.vue'
+import LoadingSpinner from '../../components/LoadingSpinner.vue'
 
 const router = useRouter()
 
+const isLoading = ref(false)
 const selectedOption = ref('specific')
 const specificDate = ref('')
 const rangeStartDate = ref('')
@@ -115,7 +118,6 @@ async function applyFilter() {
             return alert('Please select both start and end dates.')
         }
 
-
         const start = new Date(rangeStartDate.value)
         const end = new Date(rangeEndDate.value)
 
@@ -130,6 +132,7 @@ async function applyFilter() {
     }
 
     try {
+        isLoading.value = true
         const response = await axios.get(url, {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -147,6 +150,8 @@ async function applyFilter() {
             console.error('Error fetching expenses:', error)
             alert('An error occurred while fetching expenses.')
         }
+    } finally {
+        isLoading.value = false
     }
 }
 </script>
@@ -318,9 +323,8 @@ input[type='date'] {
 }
 
 @media screen and (max-width: 480px) {
-    .report-header{
+    .report-header {
         margin-top: 40%;
     }
 }
-
 </style>

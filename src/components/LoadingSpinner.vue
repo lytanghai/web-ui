@@ -1,48 +1,79 @@
 <template>
   <div class="loading-overlay">
-    <div class="spinner"></div>
+    <div class="loading-content">
+      <img src="../assets/raha-money.gif" alt="Loading..." class="loading-gif" />
+       <p class="loading-text">Loading Milloinaire Project<span class="dot-animation"></span></p>
+    </div>
   </div>
 </template>
 
 <script setup>
-// no props needed
+// No script logic needed
 </script>
 
 <style scoped>
 .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255,255,255,0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    pointer-events: all;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(65, 62, 62, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  pointer-events: all;
 }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 6px solid #040303;
-    border-top-color: #3498db;
-    border-radius: 50%;
-    animation: spin 2s linear infinite;
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.loading-gif {
+  width: 80px;
+  height: 80px;
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dot-animation::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+@keyframes dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...!';
+  }
+  100% {
+    content: '';
+  }
 }
 
 @media (max-width: 600px) {
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border-width: 5px;
-    }
+  .loading-gif {
+    width: 60px;
+    height: 60px;
+  }
+
+  .loading-text {
+    font-size: 0.95rem;
+  }
 }
 </style>

@@ -98,20 +98,20 @@ table {
 }
 
 thead {
-    background-color: #921494;
+    background-color: #fdfdfd;
 }
 
 thead th {
     padding: 0.75rem 1rem;
     text-align: left;
     font-weight: 700;
-    color: #ffffff;
+    color: #0b0b0b;
     letter-spacing: 0.03em;
     user-select: none;
 }
 
 tbody tr {
-    border-bottom: 1px solid #2f3a4a;
+    border-bottom: 1px solid #f4f6fa;
     transition: background-color 0.3s ease;
     cursor: default;
 }
@@ -122,7 +122,7 @@ tbody tr:hover {
 
 tbody td {
     padding: 0.65rem 1rem;
-    color: #000000;
+    color: #ebe5e5;
 }
 
 @media (max-width: 600px) {
@@ -192,12 +192,12 @@ tbody td {
         <h3>📊 Expense by Category</h3>
 
         <div style="margin-bottom: 2rem">
-            <h4>USD</h4>
+            <h4>$ USD $</h4>
             <Bar :data="usdData" />
         </div>
 
         <div>
-            <h4>KHR</h4>
+            <h4>៛ KHR ៛</h4>
             <Bar :data="khrData" />
         </div>
 
@@ -218,7 +218,7 @@ tbody td {
                         <td data-label="Date">{{ expense.expense_date }}</td>
                         <td data-label="Category">{{ expense.category }}</td>
                         <td data-label="Item">{{ expense.item }}</td>
-                        <td data-label="Price">{{ expense.price }} {{ expense.currency }}</td>
+                        <td style="text-align: left;" data-label="Price">{{ expense.price }} {{ expense.currency === 'USD' ? '$' : '៛' }}</td>
                     </tr>
                 </tbody>
             </table>

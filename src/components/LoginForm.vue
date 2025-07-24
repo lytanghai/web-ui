@@ -34,8 +34,8 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import StatusModel from '@/views/PopUp/StatusModel.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import StatusModel from '../views/PopUp/StatusModel.vue'
 
 const router = useRouter()
 const username = ref('')
@@ -69,8 +69,9 @@ const handleLogin = async () => {
       password: password.value,
     })
 
-    const token = response.data.token
-    localStorage.setItem('jwt_token', token)
+  
+    localStorage.setItem('jwt_token', response.data.token)
+    localStorage.setItem('username', response.data.username)
     loading.value = false
 
     // Show success popup

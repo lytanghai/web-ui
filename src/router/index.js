@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginForm from '../components/LoginForm.vue'
 import Dashboard from '../components/Dashboard.vue'
-import ExpenseReport from '../views/ExpenseReport.vue'
+import ExpenseReport from '../views/expense/ExpenseReport.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: LoginForm },

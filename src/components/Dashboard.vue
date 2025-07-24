@@ -2,6 +2,7 @@
     <div class="homepage-body">
         <div class="home-header">
             <p>Date: {{ current }}</p>
+            <!-- <p>{{ username }}</p> -->
         </div>
 
         <div class="box-container">
@@ -44,10 +45,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import CreateExpense from '@/views/CreateExpense.vue'
-import MyExpenses from '@/views/MyExpenses.vue'
+import CreateExpense from '@/views/expense/CreateExpense.vue'
+import MyExpenses from '@/views/expense/MyExpenses.vue'
 import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
-import StatusModel from '@/views/PopUp/StatusModel.vue'
+import StatusModel from '../views/PopUp/StatusModel.vue'
 
 const router = useRouter()
 
