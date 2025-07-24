@@ -3,6 +3,7 @@
         <div class="modal-content">
             <h2>Add Expense</h2>
             <form @submit.prevent="submitExpense">
+                <LoadingSpinner v-if="loading" />
                 <label>
                     Price:
                     <input type="number" step="0.01" v-model.number="expense.price" @blur="formatPrice" required />
@@ -50,6 +51,7 @@
                     <button type="submit">Create Expense</button>
                 </div>
             </form>
+
         </div>
     </div>
 </template>
@@ -57,13 +59,14 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
-const emit = defineEmits(['close'])
-
+const emit = defineEmits(['close', 'status'])
 
 const selectedCategory = ref('')
 const customCategory = ref('')
 const showCustomCategory = ref(false)
+const loading = ref(false)
 
 function onCategoryChange() {
     showCustomCategory.value = selectedCategory.value === 'Other'
@@ -86,7 +89,8 @@ const expense = ref({
 
 async function submitExpense() {
     try {
-        const token = localStorage.getItem('jwt_token') // adjust the key name if it's different
+        loading.value = true
+        const token = localStorage.getItem('jwt_token')
         const config = {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -98,9 +102,19 @@ async function submitExpense() {
             config
         )
 
-        alert('Expense created successfully!')
-        emit('close')
+        // Emit status event to parent
+        emit('status', {
+            type: 'success',
+            title: 'Expense Recorded',
+            message: 'Your expense has been recorded successfully.'
+        })
+        // Let parent decide when to close
     } catch (error) {
+        emit('status', {
+            type: 'failure',
+            title: 'Recorded Expense Failed',
+            message: error.response?.data?.message || error.message || 'Unknown error'
+        })
         if (error.response && error.response.status === 403) {
             alert('Session expired or unauthorized. Please login again.')
             localStorage.removeItem('jwt_token')
@@ -108,13 +122,14 @@ async function submitExpense() {
         } else {
             console.error('Error fetching expenses:', error)
         }
+    } finally {
+        loading.value = false
     }
 }
 
 </script>
 
 <style scoped>
-/* Same modal styles as before */
 .modal-overlay {
     position: fixed;
     top: 0;

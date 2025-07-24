@@ -33,7 +33,9 @@
                 <p>Planning</p>
             </div>
 
-            <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" />
+            <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" @status="handleStatus" />
+            <StatusModel v-if="showStatusModal" :visible="showStatusModal" :title="statusTitle" :message="statusMessage"
+                :status="statusType" closeText="Close" @close="closeStatusModal" />
             <MyExpenses v-if="showMyExpenses" @close="showMyExpenses = false" />
         </div>
     </div>
@@ -45,6 +47,7 @@ import { useRouter } from 'vue-router'
 import CreateExpense from '@/views/CreateExpense.vue'
 import MyExpenses from '@/views/MyExpenses.vue'
 import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
+import StatusModel from '@/views/PopUp/StatusModel.vue'
 
 const router = useRouter()
 
@@ -53,6 +56,22 @@ const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
 
 const showReportOptions = ref(false)
+const showStatusModal = ref(false)
+const statusTitle = ref('')
+const statusMessage = ref('')
+const statusType = ref('success') // or 'failure'
+
+function handleStatus(event) {
+    statusType.value = event.type
+    statusTitle.value = event.title
+    statusMessage.value = event.message
+    showStatusModal.value = true
+}
+
+function closeStatusModal() {
+    showStatusModal.value = false
+    showCreateExpense.value = false
+}
 
 function goToReport(type) {
     showReportOptions.value = false

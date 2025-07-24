@@ -30,13 +30,7 @@
         <div class="row-group">
           <div class="form-group">
             <label for="price">Price</label>
-            <input
-              id="price"
-              type="number"
-              step="0.01"
-              v-model.number="form.price"
-              required
-            />
+            <input id="price" type="number" step="0.01" v-model.number="form.price" required />
           </div>
 
           <div class="form-group">
@@ -51,21 +45,12 @@
         <div class="row-group">
           <div class="form-group">
             <label for="convertedPrice">Converted Price</label>
-            <input
-              id="convertedPrice"
-              type="number"
-              :value="convertedPrice"
-              readonly
-            />
+            <input id="convertedPrice" type="number" :value="convertedPrice" readonly />
           </div>
 
           <div class="form-group">
             <label for="convertedCurrency">Converted Currency</label>
-            <input
-              id="convertedCurrency"
-              :value="convertedCurrency"
-              readonly
-            />
+            <input id="convertedCurrency" :value="convertedCurrency" readonly />
           </div>
         </div>
 
@@ -83,7 +68,7 @@
 </template>
 
 <script setup>
-import { reactive, computed, defineEmits, defineProps, onMounted } from 'vue'
+import { reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['updated', 'close'])
@@ -137,16 +122,14 @@ async function submitUpdate() {
       note: form.note,
     }
 
-    await axios.post(
-      import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_UPDATE_EXPENSE,
+    await axios.patch(
+      import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_UPDATE_EXPENSE + '/' + updateData.id,
       updateData,
       headers
     )
-    alert('Expense updated successfully')
     emit('updated', updateData)
   } catch (error) {
-    console.error('Failed to update expense:', error)
-    alert('Failed to update expense')
+
   }
 }
 

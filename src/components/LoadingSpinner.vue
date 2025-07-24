@@ -1,47 +1,26 @@
 <template>
-    <div v-if="visible" class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
+  <div class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-
-const props = defineProps({
-    visible: {
-        type: Boolean,
-        default: false
-    }
-})
+// no props needed
 </script>
 
 <style scoped>
-html,
-body,
-#app {
-    height: 100%;
-}
-
 .loading-overlay {
     position: absolute;
-    /* fix on viewport */
     top: 0;
     left: 0;
     width: 100%;
-    /* full viewport width */
     height: 100%;
-    /* full viewport height */
-    background-color: transparent;
+    background-color: rgba(255,255,255,0.6);
     display: flex;
-    /* use flex */
     justify-content: center;
-    /* center horizontally */
     align-items: center;
-    /* center vertically */
-    z-index: 9999;
-    /* above all content */
-    overflow: hidden;
-    /* prevent scroll */
+    z-index: 1000;
+    pointer-events: all;
 }
 
 .spinner {
@@ -59,7 +38,6 @@ body,
     }
 }
 
-/* Responsive */
 @media (max-width: 600px) {
     .spinner {
         width: 40px;
