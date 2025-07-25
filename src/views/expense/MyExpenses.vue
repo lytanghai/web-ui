@@ -253,7 +253,6 @@ onMounted(() => {
   padding: 0 1.5rem;
   border-radius: 8px;
   width: 100%;
-  max-width: 1000px;
   height: 95vh;
   display: flex;
   flex-direction: column;

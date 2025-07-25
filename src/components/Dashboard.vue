@@ -14,11 +14,11 @@
                 <span>💰 Expense 💰</span>
                 <p>My Expenses</p>
             </div>
-            <div class="panel add_profit" @click="goTo('/list-expense')">
+            <div class="panel add_profit" @click="showCreateProfit = true">
                 <span>✏️ Profit ✏️</span>
                 <p>Add Profit</p>
             </div>
-            <div class="panel my_profit" @click="goTo('/trigger-message')">
+            <div class="panel my_profit" @click="showMyProfits = true">
                 <span>📢 Profit 📢</span>
                 <p>My Profits</p>
             </div>
@@ -36,6 +36,10 @@
             <StatusModel v-if="showStatusModal" :visible="showStatusModal" :title="statusTitle" :message="statusMessage"
                 :status="statusType" closeText="Close" @close="closeStatusModal" />
             <MyExpenses v-if="showMyExpenses" @close="showMyExpenses = false" />
+            <MyProfit v-if="showMyProfits" @close="showMyProfits = false" />
+
+            <CreateProfit v-if="showCreateProfit" @close="showCreateProfit = false" @status="handleStatus" />
+
         </div>
     </div>
 </template>
@@ -44,7 +48,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateExpense from '@/views/expense/CreateExpense.vue'
+import CreateProfit from '@/views/profit/CreateProfit.vue'
 import MyExpenses from '@/views/expense/MyExpenses.vue'
+import MyProfit from '@/views/profit/MyProfit.vue'
+
 import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
 import StatusModel from '../views/pop_up/StatusModel.vue'
 
@@ -53,6 +60,9 @@ const router = useRouter()
 const loading = ref(false)
 const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
+
+const showCreateProfit = ref(false)
+
 
 const showReportOptions = ref(false)
 const showStatusModal = ref(false)
@@ -73,6 +83,7 @@ function closeStatusModal() {
 }
 
 function goToReport(type) {
+    console.log("TYPE " + type)
     showReportOptions.value = false
     if (type === 'expense') {
         router.push('/expense-report')
