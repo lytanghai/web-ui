@@ -368,9 +368,5 @@ input[type='date'] {
     .report-header {
         margin-top: 40%;
     }
-
-    inpu[type="text"] {
-        width: ;
-    }
 }
 </style>
