@@ -16,7 +16,7 @@
                         Specific Date
                     </label>
                     <input type="date" v-if="selectedOption === 'specific'" v-model="specificDate"
-                        style="width: fit-content;" F />
+                        style="width: fit-content;" />
                 </div>
 
                 <!-- Range Date -->
@@ -26,8 +26,9 @@
                         Range Date
                     </label>
                     <div v-if="selectedOption === 'range'" class="range-inputs">
-                        <input type="date" v-model="rangeStartDate" @change="validateRange" />
-                        <input type="date" v-model="rangeEndDate" @change="validateRange" />
+                        <input type="date" style="width: fit-content;" v-model="rangeStartDate"
+                            @change="validateRange" />
+                        <input type="date" style="width: fit-content;" v-model="rangeEndDate" @change="validateRange" />
                     </div>
                     <p v-if="rangeError" class="error">{{ rangeError }}</p>
                 </div>
@@ -40,7 +41,7 @@
                     </label>
                 </div>
 
-                <button class="apply-btn" @click="applyFilter" :disabled="isLoading">
+                <button class="apply-btn" @click="applyFilter(0)" :disabled="isLoading">
                     Apply Filter
                 </button>
             </section>
@@ -50,8 +51,8 @@
         <div v-if="showResults" class="modal-overlay" @click.self="closeModal">
             <div class="modal-box">
                 <button class="modal-close" @click="closeModal">×</button>
-                <ExpenseResultChart :expenses="expenses" :selectedOption="selectedOption" :date1="date1"
-                    :date2="date2" />
+                <ExpenseResultChart :expenses="expenses" :currentPage="currentPage" :totalPages="totalPages"
+                    @page-changed="handlePageChange" :date1="date1" :date2="date2" :selectedOption="selectedOption" />
             </div>
         </div>
 
@@ -60,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import ExpenseResultChart from '@/views/expense/ExpenseResultChart.vue'
@@ -125,12 +126,15 @@ function closeModal() {
 function goHome() {
     router.push('/home')
 }
+const currentPage = ref(0)
+let totalPages = ref(1)
 
-async function applyFilter() {
+async function applyFilter(page = 0) {
+
     rangeError.value = ''
     let url = ''
     const token = localStorage.getItem('jwt_token')
-
+    currentPage.value = page
     showResults.value = false
     expenses.value = []
 
@@ -141,10 +145,9 @@ async function applyFilter() {
 
     if (selectedOption.value === 'specific') {
         if (!specificDate.value) {
-            alert('Please select a date.')
             return
         }
-        url = `${SERVER_WEB_URL}${FETCH_SPC_DATE}${specificDate.value}`
+        url = `${SERVER_WEB_URL}${FETCH_SPC_DATE}${specificDate.value}&page=${page}`
     } else if (selectedOption.value === 'range') {
         if (!rangeStartDate.value || !rangeEndDate.value) {
             alert('Please select both start and end dates.')
@@ -156,9 +159,9 @@ async function applyFilter() {
             rangeError.value = 'End date must be after start date.'
             return
         }
-        url = `${SERVER_WEB_URL}${FETCH_RNG_DATE_START}${rangeStartDate.value}${FETCH_RNG_DATE_END}${rangeEndDate.value}`
+        url = `${SERVER_WEB_URL}${FETCH_RNG_DATE_START}${rangeStartDate.value}${FETCH_RNG_DATE_END}${rangeEndDate.value}&page=${page}`
     } else if (selectedOption.value === 'thisMonth') {
-        url = `${SERVER_WEB_URL}${FETCH_MONTHLY}`
+        url = `${SERVER_WEB_URL}${FETCH_MONTHLY}?page=${page}`
     }
 
     try {
@@ -169,6 +172,8 @@ async function applyFilter() {
             }
         })
         expenses.value = response.data.data?.content || []
+        currentPage.value = page
+        totalPages.value = response.data.data.total_pages
         showResults.value = true
     } catch (error) {
         if (error.response && error.response.status === 403) {
@@ -183,6 +188,14 @@ async function applyFilter() {
         isLoading.value = false
     }
 }
+function handlePageChange(newPage) {
+    applyFilter(newPage)
+}
+
+onMounted(() => {
+    applyFilter(0)
+})
+
 </script>
 
 <style scoped>
@@ -354,6 +367,10 @@ input[type='date'] {
 @media screen and (max-width: 480px) {
     .report-header {
         margin-top: 40%;
+    }
+
+    inpu[type="text"] {
+        width: ;
     }
 }
 </style>

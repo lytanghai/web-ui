@@ -14,25 +14,23 @@ import {
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const props = defineProps({
-    expenses: {
-        type: Array,
-        required: true
-    },
-    selectedOption: {
-        type: String,
-        required: true
-    },
-    date1: {
-        type: String,
-        required: false,
-        default: ''
-    },
-    date2: {
-        type: String,
-        required: false,
-        default: ''
-    }
+    expenses: Array,
+    selectedOption: String,
+    date1: String,
+    date2: String,
+    currentPage: Number,
+    totalPages: Number
 })
+    console.log(props.selectedOption)
+
+const emit = defineEmits(['page-change'])
+
+function handlePageChange(newPage) {
+    if (newPage >= 0 && newPage < props.totalPages) {
+        console.log('Emit page:', newPage)
+        emit('page-changed', newPage)
+    }
+}
 
 // Group expenses by category and sum prices
 function groupByCategory(expenses) {
@@ -94,13 +92,14 @@ const filterDescription = computed(() => {
     }
     return ''
 })
+
 </script>
 
 <template>
     <div class="result-wrapper">
         <h3 style="color: #000;">📊 Expense by Category</h3>
         <p style="margin-bottom: 1rem; color: #555; font-size: 0.95rem;">
-            Summary: {{ filterDescription }}
+            Report on: <br>{{ filterDescription }}
         </p>
 
         <div style="margin-bottom: 2rem">
@@ -140,10 +139,164 @@ const filterDescription = computed(() => {
                     </tr>
                 </tbody>
             </table>
+            <div class="pagination-controls">
+                <button :disabled="currentPage <= 0" @click="handlePageChange(currentPage - 1)">Prev</button>
+                <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+                <button :disabled="currentPage >= totalPages - 1"
+                    @click="handlePageChange(currentPage + 1)">Next</button>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* Keep your styles as you had them */
+h3,
+h4 {
+    color: #000;
+}
+
+.table-section {
+    margin-top: 2rem;
+    background: #1e2a3a;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    color: #f0f0f0;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-x: auto;
+}
+
+.table-section h4 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #1abc9c;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    min-width: 600px;
+    /* helps responsiveness */
+}
+
+thead {
+    background-color: #fdfdfd;
+}
+
+thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    color: #0b0b0b;
+    letter-spacing: 0.03em;
+    user-select: none;
+}
+
+tbody tr {
+    border-bottom: 1px solid #f4f6fa;
+    transition: background-color 0.3s ease;
+    cursor: default;
+}
+
+tbody tr:hover {
+    background-color: #144d3e;
+}
+
+tbody td {
+    padding: 0.65rem 1rem;
+    color: #ffffff;
+}
+
+.pagination-controls {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination-controls button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pagination-controls button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    table {
+        font-size: 0.85rem;
+        min-width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .table-section {
+        padding: 0.5rem;
+    }
+
+
+    .found-txn {
+        font-size: 1rem;
+        color: #a73e3e
+    }
+
+    table {
+        border: 0;
+    }
+
+    thead {
+        display: none;
+        /* Hide header on mobile */
+    }
+
+    tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+        color: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    tbody tr:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3rem 0;
+        border-bottom: 1px solid rgba(26, 24, 24, 0.3);
+        font-weight: 600;
+    }
+
+    tbody td:last-child {
+        border-bottom: none;
+    }
+
+    tbody td::before {
+        content: attr(data-label);
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.7;
+    }
+}
 </style>
