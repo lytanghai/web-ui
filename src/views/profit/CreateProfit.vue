@@ -6,6 +6,11 @@
                 <LoadingSpinner v-if="loading" />
 
                 <label>
+                    Date:
+                    <input type="date" v-model="profit.date" required />
+                </label>
+
+                <label>
                     PnL:
                     <input type="number" step="0.01" v-model.number="profit.pnl" @blur="formatPnl" required />
                 </label>
@@ -83,6 +88,7 @@ function updateCategory() {
 }
 
 const profit = ref({
+    date: '',
     pnl: '',
     currency: 'USD',
     category: '',
