@@ -21,13 +21,56 @@ const props = defineProps({
     currentPage: Number,
     totalPages: Number
 })
-    console.log(props.selectedOption)
+
+let totalByCurrency = {}; // e.g. { "USD": 25, "KHR": 25000 }
+
+// 1. Sum prices by currency
+props.expenses.forEach(exp => {
+    const { currency, price } = exp;
+    if (!totalByCurrency[currency]) {
+        totalByCurrency[currency] = 0;
+    }
+    totalByCurrency[currency] += price;
+});
+
+console.log("Sum by currency:", totalByCurrency);
+
+
+// 2. Convert to a base currency (USD)
+let totalInUSD = 0;
+
+for (const [currency, sum] of Object.entries(totalByCurrency)) {
+    if (currency === "KHR") {
+        totalInUSD += sum / 4000; // convert to USD
+    } else if (currency === "USD") {
+        totalInUSD += sum; // already in USD
+    } else {
+        console.warn(`Unknown currency: ${currency}`);
+    }
+}
+
+console.log("💵 Total in USD:", totalInUSD.toFixed(2));
+let totalInKHR = 0;
+
+for (const [currency, sum] of Object.entries(totalByCurrency)) {
+    if (currency === "KHR") {
+        totalInKHR += sum;
+    } else if (currency === "USD") {
+        totalInKHR += sum * 4000; // convert to KHR
+    }
+}
+
+console.log("🇰🇭 Total in KHR:", totalInKHR.toFixed(0));
+
+const totalUSD = totalByCurrency.USD
+const totalKHR = totalByCurrency.KHR
+const sumUpUSD = totalInUSD.toFixed(2)
+const sumupKHR = totalInKHR.toFixed(0)
 
 const emit = defineEmits(['page-change'])
 
 function handlePageChange(newPage) {
     if (newPage >= 0 && newPage < props.totalPages) {
-        console.log('Emit page:', newPage)
         emit('page-changed', newPage)
     }
 }
@@ -93,14 +136,42 @@ const filterDescription = computed(() => {
     return ''
 })
 
+function formatUSD(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function formatKHR(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+
 </script>
 
 <template>
     <div class="result-wrapper">
         <h3 style="color: #000;">📊 Expense by Category</h3>
-        <p style="margin-bottom: 1rem; color: #555; font-size: 0.95rem;">
-            Report on: <br>{{ filterDescription }}
-        </p>
+
+        <div class="summary-result">
+            <p class="summary-desc">{{ filterDescription }}</p>
+
+            <div class="summary-flex">
+                <span>Total in USD:<strong>{{ formatUSD(totalUSD) }} USD</strong></span>
+                <span>Total in KHR: <strong>{{ formatKHR(totalKHR) }} KHR</strong></span>
+            </div>
+
+            <div class="summary-flex">
+                <span>Grand Total in USD: <strong>{{ formatUSD(sumUpUSD) }} USD</strong></span>
+                <span>Grand Total in KHR: <strong>{{ formatKHR(sumupKHR) }} KHR</strong></span>
+            </div>
+        </div>
 
         <div style="margin-bottom: 2rem">
             <h4>$ USD $</h4>
@@ -236,6 +307,42 @@ tbody td {
 
 .pagination-controls span {
     font-weight: 600;
+}
+
+.summary-result {
+    padding: 0.5rem 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin-top: 1.5rem;
+}
+
+.summary-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.summary-desc {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.summary-flex {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.summary-flex span {
+    flex: 1 1 200px;
 }
 
 @media (max-width: 600px) {
