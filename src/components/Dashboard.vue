@@ -60,11 +60,9 @@ const router = useRouter()
 const loading = ref(false)
 const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
-
 const showCreateProfit = ref(false)
-
-
 const showReportOptions = ref(false)
+
 const showStatusModal = ref(false)
 const statusTitle = ref('')
 const statusMessage = ref('')
@@ -92,9 +90,6 @@ function goToReport(type) {
     }
 }
 
-function goTo(path) {
-    router.push(path)
-}
 const username = ref('')
 
 onMounted(() => {

@@ -14,7 +14,10 @@ import {
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const props = defineProps({
-  profits: Array,
+  profits: {
+    type: Array,
+    default: () => []
+  },
   selectedOption: String,
   date1: String,
   date2: String,
@@ -22,43 +25,36 @@ const props = defineProps({
   totalPages: Number
 })
 
-let totalByCurrency = {}
+const emit = defineEmits(['page-changed'])
 
-// 1. Sum pnl by currency
-props.profits.forEach(profit => {
-  const { currency, pnl } = profit
-  if (!totalByCurrency[currency]) {
-    totalByCurrency[currency] = 0
+// Calculate totals by currency
+const currencyTotals = computed(() => {
+  const totals = {
+    USD: 0,
+    KHR: 0,
+    totalInUSD: 0,
+    totalInKHR: 0
   }
-  totalByCurrency[currency] += pnl
+
+  props.profits.forEach(p => {
+    if (p.currency === 'USD') {
+      totals.USD += p.pnl
+      totals.totalInKHR += p.pnl * 4000
+      totals.totalInUSD += p.pnl
+    } else if (p.currency === 'KHR') {
+      totals.KHR += p.pnl
+      totals.totalInUSD += p.pnl / 4000
+      totals.totalInKHR += p.pnl
+    }
+  })
+
+  return totals
 })
 
-let totalInUSD = 0
-for (const [currency, sum] of Object.entries(totalByCurrency)) {
-  if (currency === 'KHR') {
-    totalInUSD += sum / 4000 // convert to USD
-  } else if (currency === 'USD') {
-    totalInUSD += sum
-  } else {
-    console.warn(`Unknown currency: ${currency}`)
-  }
-}
-
-let totalInKHR = 0
-for (const [currency, sum] of Object.entries(totalByCurrency)) {
-  if (currency === 'KHR') {
-    totalInKHR += sum
-  } else if (currency === 'USD') {
-    totalInKHR += sum * 4000
-  }
-}
-
-const totalUSD = totalByCurrency.USD || 0
-const totalKHR = totalByCurrency.KHR || 0
-const sumUpUSD = totalInUSD.toFixed(2)
-const sumupKHR = totalInKHR.toFixed(0)
-
-const emit = defineEmits(['page-changed'])
+const totalUSD = computed(() => currencyTotals.value.USD)
+const totalKHR = computed(() => currencyTotals.value.KHR)
+const sumUpUSD = computed(() => currencyTotals.value.totalInUSD)
+const sumupKHR = computed(() => currencyTotals.value.totalInKHR)
 
 function handlePageChange(newPage) {
   if (newPage >= 0 && newPage < props.totalPages) {
@@ -152,7 +148,7 @@ function formatKHR(value) {
       <p class="summary-desc">{{ filterDescription }}</p>
 
       <div class="summary-flex">
-        <span>Total in USD:<strong>{{ formatUSD(totalUSD) }} USD</strong></span>
+        <span>Total in USD: <strong>{{ formatUSD(totalUSD) }} USD</strong></span>
         <span>Total in KHR: <strong>{{ formatKHR(totalKHR) }} KHR</strong></span>
       </div>
 

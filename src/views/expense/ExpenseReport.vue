@@ -52,7 +52,8 @@
             <div class="modal-box">
                 <button class="modal-close" @click="closeModal">×</button>
                 <ExpenseResultChart :expenses="expenses" :currentPage="currentPage" :totalPages="totalPages"
-                    @page-changed="handlePageChange" :date1="date1" :date2="date2" :selectedOption="selectedOption" />
+                    @page-changed="handlePageChange" :date1="date1" :date2="date2" :selectedOption="selectedOption"
+                    :totalKHR="totalKHR" :totalUSD="totalUSD" />
             </div>
         </div>
 
@@ -65,48 +66,66 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import ExpenseResultChart from '@/views/expense/ExpenseResultChart.vue'
-import LoadingSpinner from '../../components/LoadingSpinner.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { getReportData, setReportData, clearReportData } from '../../composable/storage'
+
 
 const router = useRouter()
 
+// State
 const isLoading = ref(false)
+const showResults = ref(false)
 const selectedOption = ref('specific')
 const specificDate = ref('')
 const rangeStartDate = ref('')
 const rangeEndDate = ref('')
 const rangeError = ref('')
 const expenses = ref([])
-const showResults = ref(false)
+const totalUSD = ref('')
+const totalKHR = ref('')
+const currentPage = ref(0)
+const totalPages = ref(1)
 
+const calculationTempData = 'expense_calculation_data'
+
+// Environment variables
 const SERVER_WEB_URL = import.meta.env.VITE_SERVER_WEB_URL
 const FETCH_SPC_DATE = import.meta.env.VITE_FETCH_EXPENSE_BY_SPC_DATE
 const FETCH_RNG_DATE_START = import.meta.env.VITE_FETCH_EXPENSE_BY_RNG_DATE_START
 const FETCH_RNG_DATE_END = import.meta.env.VITE_FETCH_EXPENSE_BY_RNG_DATE_END
 const FETCH_MONTHLY = import.meta.env.VITE_FETCH_EXPENSE_BY_MONTHLY
+const FETCH_CALCUALTE = import.meta.env.VITE_FETCH_EXPENSE_CALCULATE
 
+// Computed values
 const thisMonthStart = computed(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
 })
-
 const thisMonthEnd = computed(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 })
 
-// Compute date1 and date2 based on selectedOption for prop passing
 const date1 = computed(() => {
-    if (selectedOption.value === 'specific') return specificDate.value
-    if (selectedOption.value === 'range') return rangeStartDate.value
-    if (selectedOption.value === 'thisMonth') return thisMonthStart.value
-    return ''
+    return selectedOption.value === 'specific'
+        ? specificDate.value
+        : selectedOption.value === 'range'
+            ? rangeStartDate.value
+            : thisMonthStart.value
 })
 
 const date2 = computed(() => {
-    if (selectedOption.value === 'range') return rangeEndDate.value
-    if (selectedOption.value === 'thisMonth') return thisMonthEnd.value
-    return ''
+    return selectedOption.value === 'range'
+        ? rangeEndDate.value
+        : selectedOption.value === 'thisMonth'
+            ? thisMonthEnd.value
+            : ''
 })
+
+// Navigation
+function goHome() {
+    router.push('/home')
+}
 
 function validateRange() {
     rangeError.value = ''
@@ -118,35 +137,71 @@ function validateRange() {
         }
     }
 }
+async function fetchCalculation() {
+    const token = localStorage.getItem('jwt_token')
+    const cachedProfitData = getReportData(calculationTempData)
+    if (cachedProfitData) {
+        // Use cached data directly
+        totalKHR.value = `${cachedProfitData.total_khr || 0} ${cachedProfitData.currency_khr || 'KHR'}`
+        totalUSD.value = `${cachedProfitData.total_usd || 0} ${cachedProfitData.currency_usd || 'USD'}`
+        return // skip API call
+    }
+
+    let url = ''
+
+    if (selectedOption.value === 'specific' && specificDate.value) {
+        url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?date1=${specificDate.value}`
+    } else if (selectedOption.value === 'range' && rangeStartDate.value && rangeEndDate.value) {
+        url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?date1=${rangeStartDate.value}&date2=${rangeEndDate.value}`
+    } else if (selectedOption.value === 'thisMonth') {
+        url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?type=month`
+    }
+
+    if (!url) return
+
+    try {
+        isLoading.value = true
+        const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+
+        const totals = response.data?.data || {}
+
+        // Update reactive values
+        totalKHR.value = `${totals.total_khr || 0} ${totals.currency_khr || 'KHR'}`
+        totalUSD.value = `${totals.total_usd || 0} ${totals.currency_usd || 'USD'}`
+
+        // Cache the totals data for future usage
+        setReportData(calculationTempData, totals)
+
+    } catch (error) {
+        handleAuthError(error)
+    } finally {
+        isLoading.value = false
+    }
+}
 
 function closeModal() {
     showResults.value = false
+    clearReportData(calculationTempData)
 }
 
-function goHome() {
-    router.push('/home')
-}
-const currentPage = ref(0)
-let totalPages = ref(1)
-
+// Main apply filter method
 async function applyFilter(page = 0) {
-
-    rangeError.value = ''
-    let url = ''
     const token = localStorage.getItem('jwt_token')
-    currentPage.value = page
-    showResults.value = false
-    expenses.value = []
-
     if (!token) {
         alert('No token found!')
         return
     }
 
-    if (selectedOption.value === 'specific') {
-        if (!specificDate.value) {
-            return
-        }
+    let url = ''
+    rangeError.value = ''
+    currentPage.value = page
+    showResults.value = false
+    expenses.value = []
+
+    // Validation + URL construction
+    if (selectedOption.value === 'specific' && specificDate.value) {
         url = `${SERVER_WEB_URL}${FETCH_SPC_DATE}${specificDate.value}&page=${page}`
     } else if (selectedOption.value === 'range') {
         if (!rangeStartDate.value || !rangeEndDate.value) {
@@ -164,38 +219,53 @@ async function applyFilter(page = 0) {
         url = `${SERVER_WEB_URL}${FETCH_MONTHLY}?page=${page}`
     }
 
+    if (!url) return
+
+    fetchCalculation()
+
     try {
         isLoading.value = true
         const response = await axios.get(url, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
         })
+        const data = response.data?.data
+        if (!data || Object.keys(data).length === 0) {
+            totalKHR.value = 'empty'
+            totalUSD.value = 'empty'
+            alert("There is no transaction record!")
+            return
+        } else {
+            totalKHR.value = `${data.total_khr} ${data.currency_khr}`
+            totalUSD.value = `${data.total_usd} ${data.currency_usd}`
+        }
         expenses.value = response.data.data?.content || []
-        currentPage.value = page
-        totalPages.value = response.data.data.total_pages
+        totalPages.value = response.data.data.total_pages || 1
         showResults.value = true
     } catch (error) {
-        if (error.response && error.response.status === 403) {
-            alert('Session expired or unauthorized. Please login again.')
-            localStorage.removeItem('jwt_token')
-            window.location.href = '/'
-        } else {
-            console.error('Error fetching expenses:', error)
-            alert('An error occurred while fetching expenses.')
-        }
+        handleAuthError(error)
     } finally {
         isLoading.value = false
     }
 }
+
 function handlePageChange(newPage) {
     applyFilter(newPage)
+}
+
+function handleAuthError(error) {
+    if (error.response?.status === 403) {
+        alert('Session expired or unauthorized. Please login again.')
+        localStorage.removeItem('jwt_token')
+        window.location.href = '/'
+    } else {
+        console.error('API Error:', error)
+        alert('An error occurred while fetching data.')
+    }
 }
 
 onMounted(() => {
     applyFilter(0)
 })
-
 </script>
 
 <style scoped>

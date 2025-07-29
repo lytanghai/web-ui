@@ -48,15 +48,9 @@
     <div v-if="showResults" class="modal-overlay" @click.self="closeModal">
       <div class="modal-box">
         <button class="modal-close" @click="closeModal">×</button>
-        <ProfitResultChart
-        :profits="profits"
-        :currentPage="currentPage"
-        :totalPages="totalPages"
-        @page-changed="handlePageChange"
-        :date1="date1"
-        :date2="date2"
-        :selectedOption="selectedOption"
-        />
+        <ProfitResultChart :profits="profits" :currentPage="currentPage" :totalPages="totalPages"
+          @page-changed="handlePageChange" :date1="date1" :date2="date2" :selectedOption="selectedOption"
+          :totalKHR="totalKHR" :totalUSD="totalUSD" />
       </div>
     </div>
 
@@ -70,6 +64,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import ProfitResultChart from '@/views/profit/ProfitResultChart.vue'
 import LoadingSpinner from '../../components/LoadingSpinner.vue'
+import { setReportData, getReportData, clearReportData } from '../../composable/storage'
 
 const router = useRouter()
 
@@ -81,13 +76,17 @@ const rangeEndDate = ref('')
 const rangeError = ref('')
 const profits = ref([])
 const showResults = ref(false)
+const totalUSD = ref('')
+const totalKHR = ref('')
 
 const SERVER_WEB_URL = import.meta.env.VITE_SERVER_WEB_URL
 const FETCH_SPC_DATE = import.meta.env.VITE_FETCH_PROFIT_BY_SPC_DATE
 const FETCH_RNG_DATE_START = import.meta.env.VITE_FETCH_PROFIT_BY_RNG_DATE_START
 const FETCH_RNG_DATE_END = import.meta.env.VITE_FETCH_PROFIT_BY_RNG_DATE_END
 const FETCH_MONTHLY = import.meta.env.VITE_FETCH_PROFIT_BY_MONTHLY
+const FETCH_CALCUALTE = import.meta.env.VITE_FETCH_PROFIT_CALCULATE
 
+const calculationTempData = 'profit_calculation_data'
 const thisMonthStart = computed(() => {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
@@ -122,8 +121,55 @@ function validateRange() {
   }
 }
 
+async function fetchCalculation() {
+  const token = localStorage.getItem('jwt_token')
+  let url = ''
+
+  const cachedProfitData = getReportData(calculationTempData)
+  if (cachedProfitData) {
+    // Use cached data directly
+    totalKHR.value = `${cachedProfitData.total_khr || 0} ${cachedProfitData.currency_khr || 'KHR'}`
+    totalUSD.value = `${cachedProfitData.total_usd || 0} ${cachedProfitData.currency_usd || 'USD'}`
+    return // skip API call
+  }
+
+  if (selectedOption.value === 'specific' && specificDate.value) {
+    url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?date1=${specificDate.value}`
+  } else if (selectedOption.value === 'range' && rangeStartDate.value && rangeEndDate.value) {
+    url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?date1=${rangeStartDate.value}&date2=${rangeEndDate.value}`
+  } else if (selectedOption.value === 'thisMonth') {
+    url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?type=month`
+  }
+
+  if (!url) return
+
+  try {
+    isLoading.value = true
+    const response = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const totals = response.data?.data || {}
+
+    // ❌ If no totals returned, just stop here
+    if (Object.keys(totals).length === 0) return
+
+    // ✅ Set totals
+    totalKHR.value = `${totals.total_khr || 0} ${totals.currency_khr || 'KHR'}`
+    totalUSD.value = `${totals.total_usd || 0} ${totals.currency_usd || 'USD'}`
+
+    setReportData(calculationTempData, totals)
+
+  } catch (error) {
+    console.error('Fetch failed:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 function closeModal() {
   showResults.value = false
+  clearReportData(calculationTempData)
+
 }
 
 function goHome() {
@@ -164,6 +210,9 @@ async function applyFilter(page = 0) {
   } else if (selectedOption.value === 'thisMonth') {
     url = `${SERVER_WEB_URL}${FETCH_MONTHLY}?page=${page}`
   }
+  if (!url) return
+
+  fetchCalculation()
 
   try {
     isLoading.value = true
@@ -173,6 +222,16 @@ async function applyFilter(page = 0) {
       }
     })
 
+    const data = response.data?.data
+    if (!data || Object.keys(data).length === 0) {
+      totalKHR.value = 'empty'
+      totalUSD.value = 'empty'
+      alert("There is no transaction record!")
+      return
+    } else {
+      totalKHR.value = `${data.total_khr} ${data.currency_khr}`
+      totalUSD.value = `${data.total_usd} ${data.currency_usd}`
+    }
     profits.value = response.data.data?.content || []
     currentPage.value = page
     totalPages.value = response.data.data.total_pages
@@ -202,173 +261,173 @@ onMounted(() => {
 
 <style scoped>
 * {
-    overflow: hidden;
-    font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
 
 }
 
 .back-btn {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 0 0 1rem 0;
-    display: inline-block;
-    transition: background-color 0.3s ease;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0 0 1rem 0;
+  display: inline-block;
+  transition: background-color 0.3s ease;
 }
 
 .back-btn:hover {
-    background-color: #1f5a89;
+  background-color: #1f5a89;
 }
 
 input[type="date"] {
-    width: fit-content;
+  width: fit-content;
 }
 
 .container {
-    padding: 1.5rem;
-    background-color: #19202e;
-    position: absolute;
-    width: 100%;
-    min-height: 100vh;
-    left: 0;
-    top: 0;
-    color: #fff;
-    box-sizing: border-box;
-    overflow-y: auto;
+  padding: 1.5rem;
+  background-color: #19202e;
+  position: absolute;
+  width: 100%;
+  min-height: 100vh;
+  left: 0;
+  top: 0;
+  color: #fff;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .expense-report {
-    max-width: 600px;
-    margin: auto;
-    margin-top: 10%;
+  max-width: 600px;
+  margin: auto;
+  margin-top: 10%;
 }
 
 .report-header h2 {
-    margin-bottom: 1rem;
-    text-align: center;
-    font-size: 1.6rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1.6rem;
 }
 
 .filter-section {
-    border: 1px solid #ddd;
-    padding: 1rem;
-    border-radius: 8px;
-    background-color: #1e2a3a;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #1e2a3a;
 }
 
 .filter-option {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .filter-option label {
-    display: block;
-    margin-bottom: 0.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 input[type='date'] {
-    width: 100%;
-    padding: 0.4rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+  width: 100%;
+  padding: 0.4rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
 .range-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 @media (min-width: 500px) {
-    .range-inputs {
-        flex-direction: row;
-        align-items: center;
-    }
+  .range-inputs {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .error {
-    color: red;
-    font-size: 0.9rem;
+  color: red;
+  font-size: 0.9rem;
 }
 
 .apply-btn {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
 }
 
 .apply-btn:hover {
-    background-color: #2980b9;
+  background-color: #2980b9;
 }
 
 /* Modal Styles */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .modal-box {
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 1000px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-sizing: border-box;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .modal-close {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    font-size: 1.8rem;
-    background: transparent;
-    border: none;
-    cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 1.8rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 /* Make chart scrollable on smaller screens */
 @media (max-width: 768px) {
 
 
-    .modal-box {
-        padding: 1rem;
-    }
+  .modal-box {
+    padding: 1rem;
+  }
 
-    .report-header h2 {
-        font-size: 1.4rem;
-    }
+  .report-header h2 {
+    font-size: 1.4rem;
+  }
 
-    .apply-btn {
-        font-size: 0.95rem;
-    }
+  .apply-btn {
+    font-size: 0.95rem;
+  }
 }
 
 @media screen and (max-width: 480px) {
-    .report-header {
-        margin-top: 40%;
-    }
+  .report-header {
+    margin-top: 40%;
+  }
 }
 </style>
