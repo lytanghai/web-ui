@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
+import {getGrandTotal, formatCurrencyString} from '../../composable/common'
 import {
   Chart as ChartJS,
   Title,
@@ -22,39 +23,12 @@ const props = defineProps({
   date1: String,
   date2: String,
   currentPage: Number,
-  totalPages: Number
+  totalPages: Number,
+  totalKHR: Number,
+  totalUSD: Number
 })
 
 const emit = defineEmits(['page-changed'])
-
-// Calculate totals by currency
-const currencyTotals = computed(() => {
-  const totals = {
-    USD: 0,
-    KHR: 0,
-    totalInUSD: 0,
-    totalInKHR: 0
-  }
-
-  props.profits.forEach(p => {
-    if (p.currency === 'USD') {
-      totals.USD += p.pnl
-      totals.totalInKHR += p.pnl * 4000
-      totals.totalInUSD += p.pnl
-    } else if (p.currency === 'KHR') {
-      totals.KHR += p.pnl
-      totals.totalInUSD += p.pnl / 4000
-      totals.totalInKHR += p.pnl
-    }
-  })
-
-  return totals
-})
-
-const totalUSD = computed(() => currencyTotals.value.USD)
-const totalKHR = computed(() => currencyTotals.value.KHR)
-const sumUpUSD = computed(() => currencyTotals.value.totalInUSD)
-const sumupKHR = computed(() => currencyTotals.value.totalInKHR)
 
 function handlePageChange(newPage) {
   if (newPage >= 0 && newPage < props.totalPages) {
@@ -123,21 +97,6 @@ const filterDescription = computed(() => {
   return ''
 })
 
-function formatUSD(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value)
-}
-
-function formatKHR(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value)
-}
 </script>
 
 <template>
@@ -148,13 +107,13 @@ function formatKHR(value) {
       <p class="summary-desc">{{ filterDescription }}</p>
 
       <div class="summary-flex">
-        <span>Total in USD: <strong>{{ formatUSD(totalUSD) }} USD</strong></span>
-        <span>Total in KHR: <strong>{{ formatKHR(totalKHR) }} KHR</strong></span>
+        <span>Total in USD: <strong>{{ formatCurrencyString(totalUSD) }}</strong></span>
+        <span>Total in KHR: <strong>{{ formatCurrencyString(totalKHR) }}</strong></span>
       </div>
 
       <div class="summary-flex">
-        <span>Grand Total in USD: <strong>{{ formatUSD(sumUpUSD) }} USD</strong></span>
-        <span>Grand Total in KHR: <strong>{{ formatKHR(sumupKHR) }} KHR</strong></span>
+        <span>Grand Total in USD: <strong>{{ getGrandTotal(totalUSD, totalKHR, "USD") }}</strong></span>
+        <span>Grand Total in KHR: <strong>{{ getGrandTotal(totalUSD, totalKHR, "KHR") }}</strong></span>
       </div>
     </div>
 
@@ -207,187 +166,187 @@ function formatKHR(value) {
 <style scoped>
 h3,
 h4 {
-    color: #000;
+  color: #000;
 }
 
 .table-section {
-    margin-top: 2rem;
-    background: #1e2a3a;
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    color: #f0f0f0;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-    overflow-x: auto;
+  margin-top: 2rem;
+  background: #1e2a3a;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  color: #f0f0f0;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: auto;
 }
 
 .table-section h4 {
-    margin-bottom: 1rem;
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: #1abc9c;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #1abc9c;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-    min-width: 600px;
-    /* helps responsiveness */
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 600px;
+  /* helps responsiveness */
 }
 
 thead {
-    background-color: #fdfdfd;
+  background-color: #fdfdfd;
 }
 
 thead th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: #0b0b0b;
-    letter-spacing: 0.03em;
-    user-select: none;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: #0b0b0b;
+  letter-spacing: 0.03em;
+  user-select: none;
 }
 
 tbody tr {
-    border-bottom: 1px solid #f4f6fa;
-    transition: background-color 0.3s ease;
-    cursor: default;
+  border-bottom: 1px solid #f4f6fa;
+  transition: background-color 0.3s ease;
+  cursor: default;
 }
 
 tbody tr:hover {
-    background-color: #144d3e;
+  background-color: #144d3e;
 }
 
 tbody td {
-    padding: 0.65rem 1rem;
-    color: #ffffff;
+  padding: 0.65rem 1rem;
+  color: #ffffff;
 }
 
 .pagination-controls {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 
 .pagination-controls button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    font-weight: 600;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .pagination-controls button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .pagination-controls span {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .summary-result {
-    padding: 0.5rem 1.5rem;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
-    margin-top: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  margin-top: 1.5rem;
 }
 
 .summary-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 .summary-desc {
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
-    color: #555;
-    font-weight: bold;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  color: #555;
+  font-weight: bold;
 }
 
 .summary-flex {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .summary-flex span {
-    flex: 1 1 200px;
+  flex: 1 1 200px;
 }
 
 @media (max-width: 600px) {
-    table {
-        font-size: 0.85rem;
-        min-width: 100%;
-    }
+  table {
+    font-size: 0.85rem;
+    min-width: 100%;
+  }
 }
 
 @media screen and (max-width: 480px) {
-    .table-section {
-        padding: 0.5rem;
-    }
+  .table-section {
+    padding: 0.5rem;
+  }
 
 
-    .found-txn {
-        font-size: 1rem;
-        color: #a73e3e
-    }
+  .found-txn {
+    font-size: 1rem;
+    color: #a73e3e
+  }
 
-    table {
-        border: 0;
-    }
+  table {
+    border: 0;
+  }
 
-    thead {
-        display: none;
-        /* Hide header on mobile */
-    }
+  thead {
+    display: none;
+    /* Hide header on mobile */
+  }
 
-    tbody tr {
-        display: block;
-        margin-bottom: 1rem;
-        /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-        color: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+  tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+    color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 
-    tbody tr:hover {
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
+  tbody tr:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
 
-    tbody td {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.3rem 0;
-        border-bottom: 1px solid rgba(26, 24, 24, 0.3);
-        font-weight: 600;
-    }
+  tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(26, 24, 24, 0.3);
+    font-weight: 600;
+  }
 
-    tbody td:last-child {
-        border-bottom: none;
-    }
+  tbody td:last-child {
+    border-bottom: none;
+  }
 
-    tbody td::before {
-        content: attr(data-label);
-        font-weight: 400;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        opacity: 0.7;
-    }
+  tbody td::before {
+    content: attr(data-label);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+  }
 }
 </style>

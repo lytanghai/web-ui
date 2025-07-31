@@ -141,14 +141,12 @@ async function fetchCalculation() {
     const token = localStorage.getItem('jwt_token')
     const cachedProfitData = getReportData(calculationTempData)
     if (cachedProfitData) {
-        // Use cached data directly
         totalKHR.value = `${cachedProfitData.total_khr || 0} ${cachedProfitData.currency_khr || 'KHR'}`
         totalUSD.value = `${cachedProfitData.total_usd || 0} ${cachedProfitData.currency_usd || 'USD'}`
-        return // skip API call
+        return
     }
 
     let url = ''
-
     if (selectedOption.value === 'specific' && specificDate.value) {
         url = `${SERVER_WEB_URL}${FETCH_CALCUALTE}?date1=${specificDate.value}`
     } else if (selectedOption.value === 'range' && rangeStartDate.value && rangeEndDate.value) {
@@ -166,12 +164,9 @@ async function fetchCalculation() {
         })
 
         const totals = response.data?.data || {}
-
-        // Update reactive values
         totalKHR.value = `${totals.total_khr || 0} ${totals.currency_khr || 'KHR'}`
         totalUSD.value = `${totals.total_usd || 0} ${totals.currency_usd || 'USD'}`
 
-        // Cache the totals data for future usage
         setReportData(calculationTempData, totals)
 
     } catch (error) {
@@ -221,23 +216,13 @@ async function applyFilter(page = 0) {
 
     if (!url) return
 
-    fetchCalculation()
+    await fetchCalculation()
 
     try {
         isLoading.value = true
         const response = await axios.get(url, {
             headers: { Authorization: `Bearer ${token}` }
         })
-        const data = response.data?.data
-        if (!data || Object.keys(data).length === 0) {
-            totalKHR.value = 'empty'
-            totalUSD.value = 'empty'
-            alert("There is no transaction record!")
-            return
-        } else {
-            totalKHR.value = `${data.total_khr} ${data.currency_khr}`
-            totalUSD.value = `${data.total_usd} ${data.currency_usd}`
-        }
         expenses.value = response.data.data?.content || []
         totalPages.value = response.data.data.total_pages || 1
         showResults.value = true

@@ -212,7 +212,7 @@ async function applyFilter(page = 0) {
   }
   if (!url) return
 
-  fetchCalculation()
+  await fetchCalculation()
 
   try {
     isLoading.value = true
@@ -222,16 +222,6 @@ async function applyFilter(page = 0) {
       }
     })
 
-    const data = response.data?.data
-    if (!data || Object.keys(data).length === 0) {
-      totalKHR.value = 'empty'
-      totalUSD.value = 'empty'
-      alert("There is no transaction record!")
-      return
-    } else {
-      totalKHR.value = `${data.total_khr} ${data.currency_khr}`
-      totalUSD.value = `${data.total_usd} ${data.currency_usd}`
-    }
     profits.value = response.data.data?.content || []
     currentPage.value = page
     totalPages.value = response.data.data.total_pages

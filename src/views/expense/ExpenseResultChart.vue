@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
+import {getGrandTotal, formatCurrencyString} from '../../composable/common'
 import {
   Chart as ChartJS,
   Title,
@@ -19,9 +20,12 @@ const props = defineProps({
   date1: String,
   date2: String,
   currentPage: Number,
-  totalPages: Number
+  totalPages: Number,
+  totalUSD: Number,
+  totalKHR: Number
 })
 
+console.log(typeof(props.totalUSD))
 const emit = defineEmits(['page-change'])
 
 function handlePageChange(newPage) {
@@ -29,34 +33,6 @@ function handlePageChange(newPage) {
     emit('page-changed', newPage)
   }
 }
-
-const currencyTotals = computed(() => {
-  const totals = {
-    USD: 0,
-    KHR: 0,
-    totalInUSD: 0,
-    totalInKHR: 0
-  }
-
-  props.expenses.forEach(exp => {
-    if (exp.currency === 'USD') {
-      totals.USD += exp.price
-      totals.totalInKHR += exp.price * 4000
-      totals.totalInUSD += exp.price
-    } else if (exp.currency === 'KHR') {
-      totals.KHR += exp.price
-      totals.totalInUSD += exp.price / 4000
-      totals.totalInKHR += exp.price
-    }
-  })
-
-  return totals
-})
-
-const totalUSD = computed(() => currencyTotals.value.USD)
-const totalKHR = computed(() => currencyTotals.value.KHR)
-const sumUpUSD = computed(() => currencyTotals.value.totalInUSD.toFixed(2))
-const sumupKHR = computed(() => currencyTotals.value.totalInKHR.toFixed(0))
 
 // Group expenses by category and sum prices
 function groupByCategory(expenses) {
@@ -119,21 +95,6 @@ const filterDescription = computed(() => {
   return ''
 })
 
-function formatUSD(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
-}
-
-function formatKHR(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'decimal',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
-}
 </script>
 
 <template>
@@ -144,13 +105,13 @@ function formatKHR(value) {
       <p class="summary-desc">{{ filterDescription }}</p>
 
       <div class="summary-flex">
-        <span>Total in USD: <strong>{{ formatUSD(totalUSD) }} USD</strong></span>
-        <span>Total in KHR: <strong>{{ formatKHR(totalKHR) }} KHR</strong></span>
+        <span>Total in USD: <strong>{{ formatCurrencyString(totalUSD)}}</strong></span>
+        <span>Total in KHR: <strong>{{ formatCurrencyString(totalKHR) }}</strong></span>
       </div>
 
       <div class="summary-flex">
-        <span>Grand Total in USD: <strong>{{ formatUSD(sumUpUSD) }} USD</strong></span>
-        <span>Grand Total in KHR: <strong>{{ formatKHR(sumupKHR) }} KHR</strong></span>
+        <span>Grand Total in USD: <strong>{{ getGrandTotal(totalUSD,totalKHR , "USD") }}</strong></span>
+        <span>Grand Total in KHR: <strong>{{ getGrandTotal(totalUSD,totalKHR , "KHR") }}</strong></span>
       </div>
     </div>
 
