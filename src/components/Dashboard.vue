@@ -27,17 +27,17 @@
                 <p>Reports</p>
             </div>
 
-            <!-- <div class="panel planning" @click="goTo('/check-report')">
+            <div class="panel planning" @click="showPlanOptions = true">
                 <span>📊 Analyze 📊</span>
                 <p>Planning</p>
-            </div> -->
+            </div>
             <ReportTypeSelector v-if="showReportOptions" @close="showReportOptions = false" @select="goToReport" />
             <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" @status="handleStatus" />
             <StatusModel v-if="showStatusModal" :visible="showStatusModal" :title="statusTitle" :message="statusMessage"
                 :status="statusType" closeText="Close" @close="closeStatusModal" />
             <MyExpenses v-if="showMyExpenses" @close="showMyExpenses = false" />
             <MyProfit v-if="showMyProfits" @close="showMyProfits = false" />
-
+            <PlanTypeSelector v-if="showPlanOptions" @close="showPlanOptions = false" @select="openPlanDashboard" />
             <CreateProfit v-if="showCreateProfit" @close="showCreateProfit = false" @status="handleStatus" />
 
         </div>
@@ -51,18 +51,19 @@ import CreateExpense from '@/views/expense/CreateExpense.vue'
 import CreateProfit from '@/views/profit/CreateProfit.vue'
 import MyExpenses from '@/views/expense/MyExpenses.vue'
 import MyProfit from '@/views/profit/MyProfit.vue'
-
+import PlanTypeSelector from './PlanTypeSelector.vue'
 import ReportTypeSelector from '@/components/ReportTypeSelector.vue'
 import StatusModel from '../views/pop_up/StatusModel.vue'
 
 const router = useRouter()
+const showMyProfits = ref(false)
 
 const loading = ref(false)
 const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
 const showCreateProfit = ref(false)
 const showReportOptions = ref(false)
-
+const showPlanOptions = ref(false)
 const showStatusModal = ref(false)
 const statusTitle = ref('')
 const statusMessage = ref('')
@@ -90,10 +91,14 @@ function goToReport(type) {
     }
 }
 
+function openPlanDashboard() {
+    showPlanOptions.value = true
+    
+}
+
 const username = ref('')
 
 onMounted(() => {
-    // For demo: get username from localStorage or fallback
     username.value = localStorage.getItem('username') || 'ADMIN'
 })
 
@@ -130,15 +135,7 @@ onUnmounted(() => {
     clearInterval(intervalId)
 })
 
-function logout() {
-    loading.value = true
 
-    setTimeout(() => {
-        loading.value = false
-        localStorage.clear()
-        router.push('/')
-    }, 2000)
-}
 </script>
 
 <style scoped>
