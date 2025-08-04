@@ -20,7 +20,7 @@
         <table class="expense-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <!-- <th>ID</th> -->
               <th>Expense Date</th>
               <th>Category</th>
               <th>Item</th>
@@ -32,7 +32,7 @@
           </thead>
           <tbody>
             <tr v-for="expense in expenses" :key="expense.id">
-              <td>{{ expense.id }}</td>
+              <!-- <td>{{ expense.id }}</td> -->
               <td>{{ formatDate(expense.expense_date) }}</td>
               <td>{{ expense.category }}</td>
               <td>{{ expense.item }}</td>

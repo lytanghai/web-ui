@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
+  <div class="modal-overlay" >
     <div class="modal-content">
       <h2>Create Saving Plan</h2>
       <form @submit.prevent="submitPlan">

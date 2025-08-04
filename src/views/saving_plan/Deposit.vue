@@ -1,12 +1,13 @@
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content" @click.stop>
+      <LoadingSpinner v-if="loading" />
       <header class="modal-header">
         <h2>Deposit to {{ plan.planName }}</h2>
         <button class="close-btn" aria-label="Close" @click="close">×</button>
       </header>
 
-      <form v-if="!showSuccess" @submit.prevent="handleSubmit" class="deposit-form">
+      <form v-if="!showSuccess && !loading" @submit.prevent="handleSubmit" class="deposit-form">
         <label>
           Amount:
           <input v-model.number="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount"
@@ -37,6 +38,7 @@
 <script setup>
 import { ref, defineEmits, defineProps } from 'vue'
 import Successful from '../../components/Successful.vue'
+import LoadingSpinner from '../../components/LoadingSpinner.vue'
 import axios from 'axios'
 
 const emit = defineEmits(['close'])
@@ -46,7 +48,7 @@ const props = defineProps({
     required: true,
   },
 })
-
+const loading = ref(false)
 const amount = ref(null)
 const currency = ref(props.plan.targetCurrency || '')
 const currencies = ['USD', 'KHR']
@@ -88,6 +90,7 @@ async function deposit(planId, amount, currency) {
 }
 
 async function handleSubmit() {
+  loading.value = true
   try {
     if (!amount.value || !currency.value) {
       alert('Please enter amount and select currency')
@@ -103,6 +106,8 @@ async function handleSubmit() {
     showSuccess.value = true
   } catch (err) {
     alert("Error! Something went wrong")
+  } finally {
+    loading.value = false
   }
 }
 

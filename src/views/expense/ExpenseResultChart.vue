@@ -25,7 +25,6 @@ const props = defineProps({
   totalKHR: Number
 })
 
-console.log(typeof(props.totalUSD))
 const emit = defineEmits(['page-change'])
 
 function handlePageChange(newPage) {

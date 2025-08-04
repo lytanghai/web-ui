@@ -51,7 +51,7 @@
                     <button type="submit">Create Expense</button>
                 </div>
             </form>
-
+            
         </div>
     </div>
 </template>
@@ -120,7 +120,7 @@ async function submitExpense() {
             localStorage.removeItem('jwt_token')
             window.location.href = '/'
         } else {
-            console.error('Error fetching expenses:', error)
+            alert('Error fetching expenses')
         }
     } finally {
         loading.value = false

@@ -20,7 +20,7 @@
 
       <div class="detail-row">
         <span class="label">New Progress:</span>
-        <span class="value progress">{{ progress }}</span>
+        <span class="value progress">{{ progress }} %</span>
       </div>
 
       <button @click="close">Close</button>
@@ -80,7 +80,7 @@ function close() {
   background: white;
   padding: 2rem 2.5rem;
   border-radius: 12px;
-  width: 350px;
+  width: 500px;
   box-sizing: border-box;
   text-align: left;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

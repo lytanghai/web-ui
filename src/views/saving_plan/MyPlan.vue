@@ -36,6 +36,7 @@
                     <div class="progress-container" role="progressbar" :aria-valuenow="progress(plan)" aria-valuemin="0"
                         aria-valuemax="100" :aria-label="`Progress for ${plan.goalName}`">
                         <div class="progress-bar" :style="{ width: progress(plan) + '%' }"></div>
+                        <span class="progress-text">{{ progress(plan) }}%</span> <!-- Add this line -->
                     </div>
 
                     <div class="amounts">
@@ -59,10 +60,6 @@
                         </button>
                         <button class="btn btn-view" @click="view(plan)" title="View">
                             👁️<span>View</span>
-                        </button>
-                        <button v-if="plan.targetAmount !== plan.currentAmount" class="btn btn-update"
-                            @click="update(plan)" title="Update">
-                            ✏️<span>Update</span>
                         </button>
                         <button class="btn btn-delete" @click="deletePlanPrompt(plan.id)" title="Delete">
                             🗑️<span>Delete</span>
@@ -107,204 +104,6 @@
     </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, defineEmits } from 'vue'
-import axios from 'axios'
-import LoadingSpinner from '../../components/LoadingSpinner.vue'
-import Deposit from './Deposit.vue'
-import ViewHistory from './ViewHistory.vue'
-
-const emit = defineEmits(['close'])
-const close = () => emit('close')
-
-const isLoading = ref(false)
-const plans = ref([])
-const page = ref(0)
-const size = 10
-const totalPages = ref(1)
-
-
-const filters = ref({
-    goalName: '',
-    sortBy: 'all', // default sorting option
-})
-const isExpired = (deadline) => {
-    if (!deadline) return false
-    return new Date(deadline) < new Date()
-}
-// Computed filtered and sorted plans
-const filteredPlans = computed(() => {
-    let filtered = plans.value
-
-    // Filter by goalName (case insensitive)
-    if (filters.value.goalName.trim() !== '') {
-        filtered = filtered.filter((plan) =>
-            plan.goalName.toLowerCase().includes(filters.value.goalName.toLowerCase())
-        )
-    }
-
-    // Sort by completed or not
-    if (filters.value.sortBy === 'completedFirst') {
-        filtered = filtered.slice().sort((a, b) => {
-            const aCompleted = a.currentAmount === a.targetAmount
-            const bCompleted = b.currentAmount === b.targetAmount
-            return (bCompleted === true) - (aCompleted === true) // true first
-        })
-    } else if (filters.value.sortBy === 'notCompletedFirst') {
-        filtered = filtered.slice().sort((a, b) => {
-            const aCompleted = a.currentAmount === a.targetAmount
-            const bCompleted = b.currentAmount === b.targetAmount
-            return (aCompleted === true) - (bCompleted === true) // false first
-        })
-    }
-
-    return filtered
-})
-
-const showConfirmModal = ref(false)
-const planToDeleteId = ref(null)
-
-const showDepositPanel = ref(false)
-const selectedPlanForDeposit = ref(null)
-
-const selectedPlanId = ref(null)
-const isViewModalVisible = ref(false)
-
-async function fetchPlans(pageNum = 0) {
-    if (pageNum < 0 || (totalPages.value && pageNum >= totalPages.value)) return
-    isLoading.value = true
-    try {
-        const token = localStorage.getItem('jwt_token')
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            params: {
-                page: pageNum,
-                size,
-            },
-        }
-
-        const response = await axios.get(
-            import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_FETCH_SAVING_PLAN_URI,
-            config
-        )
-        const data = response.data.data
-
-        // Map backend keys to frontend keys
-        plans.value = data.content.map((plan) => ({
-            id: plan.id,
-            goalName: plan.plan_name,
-            targetAmount: plan.target_amount,
-            targetCurrency: plan.target_currency,
-            currentAmount: plan.current_amount,
-            currentCurrency: plan.current_amount_currency,
-            createdOn: new Date(plan.created_at).toISOString().slice(0, 10),
-            deadline: new Date(plan.deadline).toISOString().slice(0, 10),
-            status: plan.status,
-        }))
-
-        totalPages.value = data.total_pages
-        page.value = data.page
-    } catch (error) {
-        if (error.response && error.response.status === 403) {
-            alert('Session expired or unauthorized. Please login again.')
-            localStorage.removeItem('jwt_token')
-            window.location.href = '/'
-        } else {
-            console.error('Error submitting profit:', error)
-        }
-    } finally {
-        isLoading.value = false
-    }
-}
-
-function formatAmount(amount, currency) {
-    if (!amount) return '-'
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency,
-    }).format(amount)
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '-'
-    const d = new Date(dateStr)
-    return d.toLocaleDateString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    })
-}
-
-function progress(plan) {
-    if (!plan.targetAmount) return 0
-    return Math.min(100, Math.round((plan.currentAmount / plan.targetAmount) * 100))
-}
-
-function deletePlanPrompt(id) {
-    planToDeleteId.value = id
-    showConfirmModal.value = true
-}
-
-function cancelDelete() {
-    planToDeleteId.value = null
-    showConfirmModal.value = false
-}
-
-async function confirmDelete() {
-    try {
-        const token = localStorage.getItem('jwt_token')
-        const config = {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        }
-
-        await axios.post(
-            `${import.meta.env.VITE_SERVER_WEB_URL}+${import.meta.env.VITE_DELETE_SAVING_PLAN}`,
-            {
-                id: planToDeleteId.value,
-            },
-            config
-        )
-
-        // Remove deleted plan from UI
-        plans.value = plans.value.filter((plan) => plan.id !== planToDeleteId.value)
-        await fetchPlans();
-        // Close modal
-        cancelDelete()
-    } catch (error) {
-        console.error('Delete failed:', error)
-        alert('Failed to delete the plan. Please try again.')
-    }
-}
-
-
-function deposit(plan) {
-    selectedPlanForDeposit.value = plan
-    showDepositPanel.value = true
-}
-
-function handleDepositClose() {
-    showDepositPanel.value = false
-    fetchPlans(0) // Refresh plans on deposit close
-}
-
-function view(plan) {
-    selectedPlanId.value = plan.id
-    isViewModalVisible.value = true
-}
-
-function update(plan) {
-    alert(`Update action for goal "${plan.goalName}"`)
-}
-
-onMounted(() => {
-    fetchPlans(0)
-})
-</script>
 <style scoped>
 .modal-overlay {
     position: fixed;
@@ -467,6 +266,7 @@ onMounted(() => {
 }
 
 .progress-container {
+    position: relative;
     background: #e5e7eb;
     border-radius: 9999px;
     height: 14px;
@@ -481,6 +281,18 @@ onMounted(() => {
     height: 100%;
     border-radius: 9999px 0 0 9999px;
     transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: rgb(24, 65, 179);
+    user-select: none;
+    pointer-events: none;
 }
 
 .amounts {
@@ -539,16 +351,6 @@ onMounted(() => {
 .btn-view:hover {
     background-color: #4338ca;
     box-shadow: 0 3px 10px rgb(79 70 229 / 0.6);
-}
-
-.btn-update {
-    background-color: #2563eb;
-    color: #fff;
-}
-
-.btn-update:hover {
-    background-color: #1d4ed8;
-    box-shadow: 0 3px 10px rgb(37 99 235 / 0.6);
 }
 
 .btn-delete {
@@ -622,3 +424,200 @@ onMounted(() => {
     }
 }
 </style>
+
+<script setup>
+import { ref, computed, onMounted, defineEmits } from 'vue'
+import axios from 'axios'
+import LoadingSpinner from '../../components/LoadingSpinner.vue'
+import Deposit from './Deposit.vue'
+import ViewHistory from './ViewHistory.vue'
+
+const emit = defineEmits(['close'])
+const close = () => emit('close')
+
+const isLoading = ref(false)
+const plans = ref([])
+const page = ref(0)
+const size = 10
+const totalPages = ref(1)
+
+
+const filters = ref({
+    goalName: '',
+    sortBy: 'all', // default sorting option
+})
+const isExpired = (deadline) => {
+    if (!deadline) return false
+    return new Date(deadline) < new Date()
+}
+// Computed filtered and sorted plans
+const filteredPlans = computed(() => {
+    let filtered = plans.value
+
+    // Filter by goalName (case insensitive)
+    if (filters.value.goalName.trim() !== '') {
+        filtered = filtered.filter((plan) =>
+            plan.goalName.toLowerCase().includes(filters.value.goalName.toLowerCase())
+        )
+    }
+
+    // Sort by completed or not
+    if (filters.value.sortBy === 'completedFirst') {
+        filtered = filtered.slice().sort((a, b) => {
+            const aCompleted = a.currentAmount === a.targetAmount
+            const bCompleted = b.currentAmount === b.targetAmount
+            return (bCompleted === true) - (aCompleted === true) // true first
+        })
+    } else if (filters.value.sortBy === 'notCompletedFirst') {
+        filtered = filtered.slice().sort((a, b) => {
+            const aCompleted = a.currentAmount === a.targetAmount
+            const bCompleted = b.currentAmount === b.targetAmount
+            return (aCompleted === true) - (bCompleted === true) // false first
+        })
+    }
+
+    return filtered
+})
+
+const showConfirmModal = ref(false)
+const planToDeleteId = ref(null)
+
+const showDepositPanel = ref(false)
+const selectedPlanForDeposit = ref(null)
+
+const selectedPlanId = ref(null)
+const isViewModalVisible = ref(false)
+
+async function fetchPlans(pageNum = 0) {
+    if (pageNum < 0 || (totalPages.value && pageNum >= totalPages.value)) return
+    isLoading.value = true
+    try {
+        const token = localStorage.getItem('jwt_token')
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            params: {
+                page: pageNum,
+                size,
+            },
+        }
+
+        const response = await axios.get(
+            import.meta.env.VITE_SERVER_WEB_URL + import.meta.env.VITE_FETCH_SAVING_PLAN_URI,
+            config
+        )
+        const data = response.data.data
+
+        // Map backend keys to frontend keys
+        plans.value = data.content.map((plan) => ({
+            id: plan.id,
+            goalName: plan.plan_name,
+            targetAmount: plan.target_amount,
+            targetCurrency: plan.target_currency,
+            currentAmount: plan.current_amount,
+            currentCurrency: plan.current_amount_currency,
+            createdOn: new Date(plan.created_at).toISOString().slice(0, 10),
+            deadline: new Date(plan.deadline).toISOString().slice(0, 10),
+            status: plan.status,
+        }))
+
+        totalPages.value = data.total_pages
+        page.value = data.page
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            alert('Session expired or unauthorized. Please login again.')
+            localStorage.removeItem('jwt_token')
+            window.location.href = '/'
+        } else {
+            console.error('Error submitting profit:', error)
+        }
+    } finally {
+        isLoading.value = false
+    }
+}
+
+function formatAmount(amount, currency) {
+    if (!amount) return '-'
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+    }).format(amount)
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-'
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    })
+}
+
+function progress(plan) {
+    if (!plan.targetAmount) return 0
+    return Math.min(100, Math.round((plan.currentAmount / plan.targetAmount) * 100))
+}
+
+function deletePlanPrompt(id) {
+    planToDeleteId.value = id
+    showConfirmModal.value = true
+}
+
+function cancelDelete() {
+    planToDeleteId.value = null
+    showConfirmModal.value = false
+}
+
+async function confirmDelete() {
+    try {
+        const token = localStorage.getItem('jwt_token')
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        }
+
+        await axios.post(
+            `${import.meta.env.VITE_SERVER_WEB_URL}${import.meta.env.VITE_DELETE_SAVING_PLAN}`,
+            {
+                id: planToDeleteId.value,
+            },
+            config
+        )
+
+
+        // Remove deleted plan from UI
+        plans.value = plans.value.filter((plan) => plan.id !== planToDeleteId.value)
+        await fetchPlans();
+        // Close modal
+        cancelDelete()
+    } catch (error) {
+        console.error('Delete failed:', error)
+        alert('Failed to delete the plan. Please try again.')
+    }
+}
+
+
+function deposit(plan) {
+    selectedPlanForDeposit.value = plan
+    showDepositPanel.value = true
+}
+
+function handleDepositClose() {
+    showDepositPanel.value = false
+    fetchPlans(0) // Refresh plans on deposit close
+}
+
+function view(plan) {
+    selectedPlanId.value = plan.id
+    isViewModalVisible.value = true
+}
+
+
+onMounted(() => {
+    fetchPlans(0)
+})
+</script>

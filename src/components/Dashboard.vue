@@ -22,15 +22,16 @@
                 <span>📢 Profit 📢</span>
                 <p>My Profits</p>
             </div>
-            <div class="panel report" @click="showReportOptions = true">
-                <span>📊 Analyze 📊</span>
-                <p>Reports</p>
-            </div>
 
             <div class="panel planning" @click="showPlanOptions = true">
                 <span>📊 Analyze 📊</span>
                 <p>Planning</p>
             </div>
+            <div class="panel report" @click="showReportOptions = true">
+                <span>📊 Analyze 📊</span>
+                <p>Reports</p>
+            </div>
+
             <ReportTypeSelector v-if="showReportOptions" @close="showReportOptions = false" @select="goToReport" />
             <CreateExpense v-if="showCreateExpense" @close="showCreateExpense = false" @status="handleStatus" />
             <StatusModel v-if="showStatusModal" :visible="showStatusModal" :title="statusTitle" :message="statusMessage"
@@ -58,7 +59,6 @@ import StatusModel from '../views/pop_up/StatusModel.vue'
 const router = useRouter()
 const showMyProfits = ref(false)
 
-const loading = ref(false)
 const showCreateExpense = ref(false)
 const showMyExpenses = ref(false)
 const showCreateProfit = ref(false)
@@ -93,7 +93,6 @@ function goToReport(type) {
 
 function openPlanDashboard() {
     showPlanOptions.value = true
-    
 }
 
 const username = ref('')
@@ -121,7 +120,6 @@ function formatDate(date) {
     return `${dd}/${mm}/${yyyy} - ${HH}:${minutes}:${seconds} ${ampm}`
 }
 
-
 let intervalId = null
 
 onMounted(() => {
@@ -134,7 +132,6 @@ onMounted(() => {
 onUnmounted(() => {
     clearInterval(intervalId)
 })
-
 
 </script>
 
@@ -219,7 +216,7 @@ onUnmounted(() => {
 }
 
 .panel.planning {
-    background-color: #57d6a7;
+    background-color: #b82b3a;
 }
 
 .panel.logout {

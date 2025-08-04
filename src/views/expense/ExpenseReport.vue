@@ -243,7 +243,6 @@ function handleAuthError(error) {
         localStorage.removeItem('jwt_token')
         window.location.href = '/'
     } else {
-        console.error('API Error:', error)
         alert('An error occurred while fetching data.')
     }
 }

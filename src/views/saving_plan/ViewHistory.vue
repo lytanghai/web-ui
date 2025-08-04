@@ -4,7 +4,7 @@
       <h2>Deposit History</h2>
 
       <div v-if="isLoading" class="loading">Loading history...</div>
-
+      <LoadingSpinner v-if="isLoading" />
       <table v-else-if="records.length">
         <thead>
           <tr>
@@ -30,7 +30,7 @@
         <button :disabled="page + 1 >= totalPages" @click="changePage(page + 1)">Next →</button>
       </div>
 
-      <button class="close-btn" @click="$emit('close')">Close</button>
+      <button class="close-btn" @click="$emit('close')"></button>
     </div>
   </div>
 </template>
@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import LoadingSpinner from '../../components/LoadingSpinner.vue'
 import { format } from 'date-fns'
 
 const props = defineProps({
@@ -64,17 +65,20 @@ async function fetchHistory() {
 
   try {
     const token = localStorage.getItem('jwt_token')
+    const response = await axios.get(
+      `${import.meta.env.VITE_SERVER_WEB_URL}${import.meta.env.VITE_CHECK_HISTORY}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          planId: props.planId,
+          page: page.value,
+          size,
+        },
+      }
+    )
 
-    const response = await axios.get(`${import.meta.env.VITE_SERVER_WEB_URL}+${import.meta.env.VITE_CHECK_HISTORY}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        planId: props.planId,
-        page: page.value,
-        size,
-      },
-    })
 
     const data = response.data.data
     records.value = data.content.map((item) => ({
@@ -153,8 +157,53 @@ watch(() => props.planId, fetchHistory)
 
 .close-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.close-btn::before,
+.close-btn::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  background-color: #555;
+  border-radius: 1px;
+  transition: background-color 0.3s ease;
+}
+
+.close-btn::before {
+  transform: rotate(45deg);
+}
+
+.close-btn::after {
+  transform: rotate(-45deg);
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  background-color: #4f46e5;
+  outline: none;
+  transform: scale(1.1);
+}
+
+.close-btn:hover::before,
+.close-btn:hover::after,
+.close-btn:focus::before,
+.close-btn:focus::after {
+  background-color: #fff;
 }
 
 table {
