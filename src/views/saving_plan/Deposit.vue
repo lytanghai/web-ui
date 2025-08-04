@@ -145,6 +145,7 @@ function handleSuccessClose() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  color: #000;
 }
 
 .close-btn {

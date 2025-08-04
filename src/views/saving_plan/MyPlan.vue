@@ -41,28 +41,28 @@
 
                     <div class="amounts">
                         <div>
-                            <span class="label">Target:</span>
+                            <span class="label">Target Amount:</span>
                             {{ formatAmount(plan.targetAmount, plan.targetCurrency) }}
                         </div>
                         <div>
-                            <span class="label">Current:</span>
+                            <span class="label">Current Amount:</span>
                             {{ formatAmount(plan.currentAmount, plan.currentCurrency) }}
                         </div>
                         <div>
-                            <span class="label">Created:</span> {{ formatDate(plan.createdOn) }}
+                            <span class="label">Date:</span> {{ formatDate(plan.createdOn) }}
                         </div>
                     </div>
 
                     <div class="actions-row">
                         <button v-if="plan.targetAmount !== plan.currentAmount" class="btn btn-deposit"
                             @click="deposit(plan)" title="Deposit">
-                            💰<span>Deposit</span>
+                            💰
                         </button>
                         <button class="btn btn-view" @click="view(plan)" title="View">
-                            👁️<span>View</span>
+                            👁️
                         </button>
                         <button class="btn btn-delete" @click="deletePlanPrompt(plan.id)" title="Delete">
-                            🗑️<span>Delete</span>
+                            🗑️
                         </button>
                     </div>
                 </div>
@@ -108,7 +108,8 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(10, 10, 25, 0.85);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -119,18 +120,20 @@
 }
 
 .modal-content {
-    background: #fff;
-    border-radius: 12px;
+    background: rgba(20, 20, 40, 0.6);
+    border-radius: 1rem;
     width: 100%;
     max-width: 1350px;
     max-height: 90vh;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+    border: 1px solid rgba(168, 85, 247, 0.2);
     display: flex;
     flex-direction: column;
     padding: 1.5rem 2rem;
     box-sizing: border-box;
     overflow: hidden;
     position: relative;
+    color: #f0f0f5;
 }
 
 .modal-header {
@@ -143,7 +146,7 @@
 .modal-header h2 {
     font-weight: 700;
     font-size: 1.75rem;
-    color: #4f46e5;
+    color: #a855f7;
 }
 
 .close-btn {
@@ -152,12 +155,12 @@
     font-size: 2rem;
     line-height: 1;
     cursor: pointer;
-    color: #6b7280;
+    color: #c4c7cf;
     transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #4338ca;
+    color: #a855f7;
 }
 
 .filter-form {
@@ -166,20 +169,35 @@
     margin-bottom: 1.25rem;
 }
 
+.amounts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #db8d10;
+  font-size: 0.95rem;
+  padding: 0.2rem 0;
+}
+
+.label {
+  font-weight: 600;
+  color: #a855f7;
+}
 .filter-form input[type='search'] {
     flex-grow: 1;
     padding: 0.6rem 1rem;
     border-radius: 8px;
-    border: 1.5px solid #e5e7eb;
+    border: 1.5px solid #4b5563;
     font-size: 1rem;
-    color: #374151;
-    transition: border-color 0.3s ease;
+    color: #e5e7eb;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: border-color 0.3s ease, background 0.3s ease;
 }
 
 .filter-form input[type='search']:focus {
     outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+    border-color: #a855f7;
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
 }
 
 .btn {
@@ -193,18 +211,31 @@
     border: none;
     user-select: none;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    font-size: 1rem;
+    font-size: .6rem;
     gap: 0.5rem;
 }
 
+.btn-view {
+    margin-left: 6px;
+}
+
+.btn-delete {
+    margin-left: 6px;
+}
+
+.actions-row {
+    display: inline-flex;
+    margin: 12px auto;
+}
+
 .btn-primary {
-    background-color: #4f46e5;
-    color: #fff;
+    background: linear-gradient(to right, #a855f7, #6d28d9);
+    color: white;
 }
 
 .btn-primary:hover {
-    background-color: #4338ca;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
+    background: linear-gradient(to right, #9333ea, #6d28d9);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
 }
 
 .cards-wrapper {
@@ -217,23 +248,27 @@
 }
 
 .plan-card {
-    background: #fff;
+    background: rgba(26, 26, 46, 0.9);
     border-radius: 12px;
     padding: 1rem 1.25rem;
-    box-shadow: 0 6px 14px rgb(0 0 0 / 0.08);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     font-size: 0.95rem;
     position: relative;
-    /* needed for overlay */
-    border: 2px dashed #13b41e;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+.plan-card:hover {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
 }
 
 .completed-mask {
     position: absolute;
     inset: 0;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.1);
     z-index: 10;
     display: flex;
     justify-content: center;
@@ -244,7 +279,6 @@
     border-radius: 12px;
     user-select: none;
     pointer-events: none;
-    /* prevent interaction */
 }
 
 .card-header {
@@ -257,27 +291,27 @@
 .goal-name {
     font-weight: 700;
     font-size: 1.2rem;
-    color: #4f46e5;
+    color: #a855f7;
 }
 
 .deadline {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: #9ca3af;
 }
 
 .progress-container {
     position: relative;
-    background: #e5e7eb;
+    background: #1f2937;
     border-radius: 9999px;
     height: 14px;
     width: 100%;
     margin-bottom: 1rem;
     overflow: hidden;
-    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .progress-bar {
-    background: #4f46e5;
+    background: linear-gradient(to right, #a855f7, #6d28d9);
     height: 100%;
     border-radius: 9999px 0 0 9999px;
     transition: width 0.3s ease;
@@ -290,137 +324,25 @@
     transform: translate(-50%, -50%);
     font-weight: 700;
     font-size: 0.8rem;
-    color: rgb(24, 65, 179);
+    color: #d8b4fe;
     user-select: none;
     pointer-events: none;
 }
-
-.amounts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-bottom: 1rem;
-    justify-content: space-between;
-}
-
-.amounts>div {
-    flex: 1 1 45%;
-    color: #374151;
-}
-
-.label {
-    color: #6b7280;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.actions-row {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-}
-
-.actions-row .btn {
-    flex: 1 1 45%;
-    padding: 0.6rem 0;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.btn-deposit {
-    background-color: #10b981;
-    color: #fff;
-}
-
-.btn-deposit:hover {
-    background-color: #059669;
-    box-shadow: 0 3px 10px rgb(16 185 129 / 0.6);
-}
-
-.btn-view {
-    background-color: #4f46e5;
-    color: #fff;
-}
-
-.btn-view:hover {
-    background-color: #4338ca;
-    box-shadow: 0 3px 10px rgb(79 70 229 / 0.6);
-}
-
-.btn-delete {
-    background-color: #ef4444;
-    color: #fff;
-}
-
-.btn-delete:hover {
-    background-color: #dc2626;
-    box-shadow: 0 3px 10px rgb(239 68 68 / 0.6);
-}
-
-.empty-state {
-    text-align: center;
-    color: #6b7280;
-    font-size: 1.1rem;
-    padding: 3rem 0;
-}
-
-.loading-container {
-    display: flex;
-    justify-content: center;
-    padding: 4rem 0;
-}
-
 .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 0 0 0;
-    color: #6b7280;
-}
-
-.pagination button {
-    background-color: #f9fafb;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-}
-
-.pagination button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.pagination button:not(:disabled):hover {
-    background-color: #4f46e5;
-    color: #fff;
-    border-color: #4f46e5;
+    margin-top: 10px;
+    padding: 0 12px;
+    text-align: center;
 }
 
 @media (max-width: 480px) {
     .modal-content {
-        max-width: 100vw;
-        max-height: 95vh;
-        border-radius: 0;
-        padding: 1rem;
+        max-width: 500px;
+        margin-right: 30px;
+        margin-bottom: 50px;
     }
 
-    .cards-wrapper {
-        grid-template-columns: 1fr;
-        max-height: 75vh;
-    }
-
-    .actions-row .btn {
-        flex: 1 1 100%;
+    .plan-card{
+        width: 88%;
     }
 }
 </style>

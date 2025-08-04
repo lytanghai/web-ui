@@ -1,7 +1,7 @@
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
-      <h2>Deposit History</h2>
+      <h2 style="color:#000">Deposit History</h2>
 
       <div v-if="isLoading" class="loading">Loading history...</div>
       <LoadingSpinner v-if="isLoading" />
@@ -228,13 +228,24 @@ td {
 }
 
 @media (max-width: 480px) {
+
+  .modal-overlay{
+    overflow: hidden;
+    width: 90%;
+    height: 90%;
+  }
+
   .modal-content {
+    margin-left: -15px;
+    margin-bottom: -50px;
     padding: 1rem;
-    width: 75vw;
+    width: 85vw;
+    min-height: 780px;
   }
 
   table {
     table-layout: auto;
+    color: #000;
   }
 
   th,
