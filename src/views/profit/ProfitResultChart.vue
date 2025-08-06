@@ -43,7 +43,8 @@ function groupByCategory(profits) {
     if (!grouped[profit.category]) {
       grouped[profit.category] = 0
     }
-    grouped[profit.category] += profit.pnl
+    const sign = profit.pnl_type === '+' ? 1 : profit.pnl_type === '-' ? -1 : 0
+    grouped[profit.category] += profit.pnl * sign
   })
   return grouped
 }

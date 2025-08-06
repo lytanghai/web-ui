@@ -221,7 +221,10 @@ async function applyFilter(page = 0) {
         Authorization: `Bearer ${token}`
       }
     })
-
+    if (response.data.data === null) {
+      alert('Records not found!')
+      return;
+    }
     profits.value = response.data.data?.content || []
     currentPage.value = page
     totalPages.value = response.data.data.total_pages
