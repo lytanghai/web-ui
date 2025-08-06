@@ -72,6 +72,7 @@ const handleLogin = async () => {
   
     localStorage.setItem('jwt_token', response.data.token)
     localStorage.setItem('username', response.data.username)
+    localStorage.setItem('app_version', response.data.app_version)
     loading.value = false
 
     // Show success popup

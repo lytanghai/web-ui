@@ -2,7 +2,7 @@
     <div class="homepage-body">
         <div class="home-header">
             <p>Date: {{ current }}</p>
-            <!-- <p>{{ username }}</p> -->
+            <p>{{ appVersion }}</p>
         </div>
 
         <div class="box-container">
@@ -96,9 +96,10 @@ function openPlanDashboard() {
 }
 
 const username = ref('')
-
+const appVersion = ref('')
 onMounted(() => {
     username.value = localStorage.getItem('username') || 'ADMIN'
+    appVersion.value = localStorage.getItem('app_version') || '...'
 })
 
 const current = ref('')
